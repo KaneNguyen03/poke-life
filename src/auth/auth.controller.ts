@@ -7,7 +7,7 @@ import {
     UseGuards,
 } from '@nestjs/common'
 import { AuthService } from './auth.service'
-import { RtGuard } from '../common/guards'
+import { AtGuard, RtGuard } from '../common/guards'
 import { Public, GetCurrentUserId, GetCurrentUser } from '../common/decorators'
 import { SigninDto, SignupDto } from './dto'
 import { Tokens } from './types'
@@ -22,6 +22,7 @@ export class AuthController {
 
     @Public()
     @Post('local/signup')
+    @UseGuards(AtGuard)
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Sign up' })
     @ApiResponse({ status: HttpStatus.CREATED, description: 'User successfully signed up', type: TokensResponse })
