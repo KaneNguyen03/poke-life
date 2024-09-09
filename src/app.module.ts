@@ -11,9 +11,10 @@ import { ComboItemModule } from './combo-item/combo-item.module';
 import { CustomerModule } from './customer/customer.module';
 import { OrderDetailModule } from './order-detail/order-detail.module';
 import { TransactionModule } from './transaction/transaction.module';
+import { ReviewModule } from './review/review.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule, PrismaModule, FoodModule, OrderModule, ComboModule, ComboItemModule, CustomerModule, OrderDetailModule, TransactionModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule, PrismaModule, FoodModule, OrderModule, ComboModule, ComboItemModule, CustomerModule, OrderDetailModule, TransactionModule, ReviewModule],
   providers: [
     {
       provide: APP_GUARD,
