@@ -1,0 +1,117 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  UserID       String    @id @default(uuid())
+  Username     String    @unique
+  Password     String
+  Email        String    @unique
+  HashedRt     String?
+  PhoneNumber  String
+  Address      String?
+  CreatedAt    DateTime  @default(now())
+  UpdatedAt    DateTime  @updatedAt
+  Orders       Orders[]
+}
+
+model Customers {
+  CustomerID   String    @id @default(uuid())
+  FullName     String
+  DateOfBirth  DateTime?
+  Email        String    @unique
+  PhoneNumber  String
+  Address      String?
+  CreatedAt    DateTime  @default(now())
+  UpdatedAt    DateTime  @updatedAt
+  Orders       Orders[]
+  Reviews      Reviews[]
+}
+
+model Food {
+  FoodID       String    @id @default(uuid())
+  Name         String
+  Description  String?
+  Price        Decimal   @db.Decimal(10, 2)
+  Calories     Int
+  CreatedAt    DateTime  @default(now())
+  UpdatedAt    DateTime  @updatedAt
+  ComboItems   ComboItems[]
+  OrderDetails OrderDetails[]
+  Reviews      Reviews[]
+}
+
+model Combos {
+  ComboID      String      @id @default(uuid())
+  Name         String
+  Description  String?
+  Price        Decimal     @db.Decimal(10, 2)
+  CreatedAt    DateTime    @default(now())
+  UpdatedAt    DateTime    @updatedAt
+  ComboItems   ComboItems[]
+}
+
+model ComboItems {
+  ComboItemID  String    @id @default(uuid())
+  ComboID      String
+  FoodID       String
+  Quantity     Int
+  Combo        Combos    @relation(fields: [ComboID], references: [ComboID])
+  Food         Food      @relation(fields: [FoodID], references: [FoodID])
+}
+
+model Orders {
+  OrderID      String        @id @default(uuid())
+  CustomerID   String
+  TotalPrice   Decimal       @db.Decimal(10, 2)
+  OrderStatus  String        @default("Pending")
+  CreatedAt    DateTime      @default(now())
+  UpdatedAt    DateTime      @updatedAt
+  Customer     Customers     @relation(fields: [CustomerID], references: [CustomerID])
+  OrderDetails OrderDetails[]
+  Transactions Transactions[]
+
+  Users        Users[]
+}
+
+model OrderDetails {
+  OrderDetailID String   @id @default(uuid())
+  OrderID       String
+  FoodID        String
+  Quantity      Int
+  Price         Decimal  @db.Decimal(10, 2)
+  Order         Orders   @relation(fields: [OrderID], references: [OrderID])
+  Food          Food     @relation(fields: [FoodID], references: [FoodID])
+}
+
+model Transactions {
+  TransactionID  String    @id @default(uuid())
+  OrderID        String
+  PaymentMethod  String
+  Amount         Decimal   @db.Decimal(10, 2)
+  TransactionDate DateTime @default(now())
+  Status         String    @default("Completed")
+  Order          Orders    @relation(fields: [OrderID], references: [OrderID])
+}
+
+model Reviews {
+  ReviewID      String    @id @default(uuid())
+  CustomerID    String
+  FoodID        String
+  Rating        Int
+  Comment       String?
+  CreatedAt     DateTime  @default(now())
+  Customer      Customers @relation(fields: [CustomerID], references: [CustomerID])
+  Food          Food      @relation(fields: [FoodID], references: [FoodID])
+}
