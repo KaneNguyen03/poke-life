@@ -1,26 +1,33 @@
 import { Injectable } from '@nestjs/common';
-import { CreateComboDto } from './dto/create-combo.dto';
-import { UpdateComboDto } from './dto/update-combo.dto';
+
+import { Prisma } from '@prisma/client'
+import { DatabaseService } from 'src/database/database.service';
 
 @Injectable()
 export class ComboService {
-  create(createComboDto: CreateComboDto) {
-    return 'This action adds a new combo';
+  constructor(private readonly databaseService: DatabaseService) { }
+
+  create(createComboDto: Prisma.CombosCreateInput) {
+    return this.databaseService.combos.create({ data: createComboDto })
+
   }
 
   findAll() {
-    return `This action returns all combo`;
+    return this.databaseService.combos.findMany()
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} combo`;
+  findOne(id: string) {
+    return this.databaseService.combos.findUnique({ where: { ComboID: id } })
+
   }
 
-  update(id: number, updateComboDto: UpdateComboDto) {
-    return `This action updates a #${id} combo`;
+  update(id: string, updateComboDto: Prisma.CombosUpdateInput) {
+    return this.databaseService.combos.update({ where: { ComboID: id }, data: updateComboDto })
+
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} combo`;
+  remove(id: string) {
+    return this.databaseService.combos.delete({ where: { ComboID: id } })
+
   }
 }

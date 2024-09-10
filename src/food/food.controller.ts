@@ -16,6 +16,7 @@ export class FoodController {
   @ApiOperation({ summary: 'Create a new food item' })
   @ApiResponse({ status: 201, description: 'The food has been successfully created.' })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error.' })
   create(@Body() createFoodDto: Prisma.FoodCreateInput) {
     return this.foodService.create(createFoodDto)
   }
@@ -23,6 +24,7 @@ export class FoodController {
   @Get()
   @ApiOperation({ summary: 'Retrieve all food items' })
   @ApiResponse({ status: 200, description: 'List of food items.' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error.' })
   findAll() {
     return this.foodService.findAll()
   }
@@ -31,6 +33,7 @@ export class FoodController {
   @ApiOperation({ summary: 'Retrieve a food item by ID' })
   @ApiResponse({ status: 200, description: 'The food item.' })
   @ApiResponse({ status: 404, description: 'Food item not found.' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error.' })
   findOne(@Param('id') id: string) {
     return this.foodService.findOne(id)
   }
@@ -39,6 +42,7 @@ export class FoodController {
   @ApiOperation({ summary: 'Update a food item' })
   @ApiResponse({ status: 200, description: 'The food has been successfully updated.' })
   @ApiResponse({ status: 404, description: 'Food item not found.' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error.' })
   update(@Param('id') id: string, @Body() updateFoodDto: Prisma.FoodUpdateInput) {
     return this.foodService.update(id, updateFoodDto)
   }
@@ -47,6 +51,7 @@ export class FoodController {
   @ApiOperation({ summary: 'Delete a food item' })
   @ApiResponse({ status: 200, description: 'The food has been successfully deleted.' })
   @ApiResponse({ status: 404, description: 'Food item not found.' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error.' })
   remove(@Param('id') id: string) {
     return this.foodService.remove(id)
   }
