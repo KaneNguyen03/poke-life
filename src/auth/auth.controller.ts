@@ -6,6 +6,8 @@ import {
     HttpStatus,
     Post,
     Request,
+    Res,
+    Response,
     UseGuards,
 } from '@nestjs/common'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
@@ -36,9 +38,9 @@ export class AuthController {
     @Public()
     @Get('google-redirect')
     @UseGuards(GoogleOAuthGuard)
-    async googleAuthRedirect(@Request() req) {
-        // return this.authService.googleLogin(req)
-        return { msg: "OK" }
+    async googleAuthRedirect(@Request() req, @Response() res) {
+        const token = req.user
+        return res.redirect(`http://localhost:5173/login/?access_token=${token.access_token}&refresh_token=${token.refresh_token}`)
     }
 
     @Public()

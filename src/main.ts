@@ -15,6 +15,13 @@ async function bootstrap() {
     .setVersion('1.0')
     .build()
 
+  // Enable CORS for http://localhost:5173
+  app.enableCors({
+    origin: 'http://localhost:5173',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  })
+
   // Configure session middleware
   app.use(
     session({
