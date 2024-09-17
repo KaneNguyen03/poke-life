@@ -1,6 +1,8 @@
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
+import session from 'express-session'
+import passport from 'passport'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
@@ -13,6 +15,20 @@ async function bootstrap() {
     .setVersion('1.0')
     .build()
 
+  // Configure session middleware
+  app.use(
+    session({
+      secret: process.env.SESSION_SECRET || 'my-secret', // Use environment variable for the secret
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        maxAge: 60000, // Cookie expiry time
+        secure: process.env.NODE_ENV === 'production', // Set to true if using HTTPS
+      },
+    }),
+  )
+  app.use(passport.initialize())
+  app.use(passport.session())
   // Create Swagger document
   const document = SwaggerModule.createDocument(app, config)
 

@@ -5,16 +5,21 @@ import { AuthModule } from './auth/auth.module'
 import { AtGuard } from './common/guards'
 import { FoodModule } from './food/food.module'
 import { PrismaModule } from './prisma/prisma.module'
-import { OrderModule } from './order/order.module';
-import { ComboModule } from './combo/combo.module';
-import { ComboItemModule } from './combo-item/combo-item.module';
-import { CustomerModule } from './customer/customer.module';
-import { OrderDetailModule } from './order-detail/order-detail.module';
-import { TransactionModule } from './transaction/transaction.module';
-import { ReviewModule } from './review/review.module';
+import { OrderModule } from './order/order.module'
+import { ComboModule } from './combo/combo.module'
+import { ComboItemModule } from './combo-item/combo-item.module'
+import { CustomerModule } from './customer/customer.module'
+import { OrderDetailModule } from './order-detail/order-detail.module'
+import { TransactionModule } from './transaction/transaction.module'
+import { ReviewModule } from './review/review.module'
+import { PassportModule } from '@nestjs/passport'
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule, PrismaModule, FoodModule, OrderModule, ComboModule, ComboItemModule, CustomerModule, OrderDetailModule, TransactionModule, ReviewModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }),
+    AuthModule, PrismaModule, FoodModule, OrderModule, ComboModule, ComboItemModule, CustomerModule, OrderDetailModule, TransactionModule, ReviewModule,
+  PassportModule.register({ session: true }),
+    
+  ],
   providers: [
     {
       provide: APP_GUARD,

@@ -1,9 +1,11 @@
 import {
     Body,
     Controller,
+    Get,
     HttpCode,
     HttpStatus,
     Post,
+    Request,
     UseGuards,
 } from '@nestjs/common'
 import { AuthService } from './auth.service'
@@ -13,12 +15,28 @@ import { SigninDto, SignupDto } from './dto'
 import { Tokens } from './types'
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { TokensResponse } from './types/tokensResponse.type'
+import { GoogleOAuthGuard } from './google-oauth.guard'
 
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
     constructor(private authService: AuthService) { }
+
+    @Public()
+    @Get('google/login')
+    @UseGuards(GoogleOAuthGuard)
+    async googleAuth() {
+        return { msg: 'Google Authentication' }
+    }
+
+    @Public()
+    @Get('google-redirect')
+    @UseGuards(GoogleOAuthGuard)
+    async googleAuthRedirect(@Request() req) {
+        // return this.authService.googleLogin(req)
+        return { msg: "OK" }
+    }
 
     @Public()
     @Post('local/signup')

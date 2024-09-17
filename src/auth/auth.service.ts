@@ -7,6 +7,7 @@ import { PrismaService } from '../prisma/prisma.service'
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 import { SigninDto, SignupDto } from './dto'
 import { JwtPayload, Tokens } from './types'
+import { Users } from '@prisma/client'
 
 @Injectable()
 export class AuthService {
@@ -127,4 +128,40 @@ export class AuthService {
             refresh_token: rt,
         }
     }
+
+    async googleLogin(user: { googleId: string, email: string, name: string }): Promise<Tokens> {
+        const existingUser = await this.prisma.users.findFirst({
+            where: { Email: user.email }, // Ensure field name matches Prisma schema
+        })
+        console.log(existingUser)
+        if (!existingUser) {
+            const newUser = await this.prisma.users.create({
+                data: {
+                    Email: user.email,
+                    Username: user.name,
+                    Password: 'google',
+                    PhoneNumber: '',
+                },
+            })
+            user.googleId = newUser.UserID
+        } else {
+            user.googleId = existingUser.UserID
+        }
+
+        const tokens = await this.getTokens(user.googleId, user.email)
+        console.log(tokens)
+        await this.updateRtHash(user.googleId, tokens.refresh_token)
+
+        return tokens
+    }
+
+    async findUserById(id: string): Promise<Users | null> {
+        return this.prisma.users.findUnique({
+            where: {
+                UserID: id,
+            },
+        })
+    }
 }
+
+

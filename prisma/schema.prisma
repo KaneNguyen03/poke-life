@@ -13,17 +13,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Users {
+ model Users {
   UserID       String    @id @default(uuid())
-  Username     String    @unique
+  Username     String    
   Password     String
   Email        String    @unique
   HashedRt     String?
-  PhoneNumber  String
+  PhoneNumber  String?
   Address      String?
   CreatedAt    DateTime  @default(now())
   UpdatedAt    DateTime  @updatedAt
-  Orders       Orders[]
 }
 
 model Customers {
@@ -37,6 +36,7 @@ model Customers {
   UpdatedAt    DateTime  @updatedAt
   Orders       Orders[]
   Reviews      Reviews[]
+  CustomDishes CustomDishes[]
 }
 
 model Food {
@@ -81,8 +81,6 @@ model Orders {
   Customer     Customers     @relation(fields: [CustomerID], references: [CustomerID])
   OrderDetails OrderDetails[]
   Transactions Transactions[]
-
-  Users        Users[]
 }
 
 model OrderDetails {
@@ -114,4 +112,37 @@ model Reviews {
   CreatedAt     DateTime  @default(now())
   Customer      Customers @relation(fields: [CustomerID], references: [CustomerID])
   Food          Food      @relation(fields: [FoodID], references: [FoodID])
+}
+
+model Ingredients {
+  IngredientID  String   @id @default(uuid())
+  Name          String
+  Description   String?
+  Calories      Int
+  Price         Decimal  @db.Decimal(10, 2)
+  CreatedAt     DateTime @default(now())
+  UpdatedAt     DateTime @updatedAt
+  CustomDishIngredients CustomDishIngredients[]
+}
+
+model CustomDishes {
+  CustomDishID  String   @id @default(uuid())
+  CustomerID    String
+  Name          String
+  Description   String?
+  TotalPrice    Decimal  @db.Decimal(10, 2)
+  TotalCalories Int
+  CreatedAt     DateTime @default(now())
+  UpdatedAt     DateTime @updatedAt
+  Customer      Customers @relation(fields: [CustomerID], references: [CustomerID])
+  CustomDishIngredients CustomDishIngredients[]
+}
+
+model CustomDishIngredients {
+  CustomDishIngredientID String   @id @default(uuid())
+  CustomDishID           String
+  IngredientID           String
+  Quantity               Int
+  CustomDish             CustomDishes  @relation(fields: [CustomDishID], references: [CustomDishID])
+  Ingredient             Ingredients   @relation(fields: [IngredientID], references: [IngredientID])
 }
