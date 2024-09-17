@@ -8,14 +8,17 @@ import {
     Request,
     UseGuards,
 } from '@nestjs/common'
-import { AuthService } from './auth.service'
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { GetCurrentUserId, Public } from '../common/decorators'
 import { AtGuard, RtGuard } from '../common/guards'
-import { Public, GetCurrentUserId, GetCurrentUser } from '../common/decorators'
+import { GetCurrentUser } from './../common/decorators/get-current-user.decorator'
+import { AuthService } from './auth.service'
 import { SigninDto, SignupDto } from './dto'
-import { Tokens } from './types'
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger'
-import { TokensResponse } from './types/tokensResponse.type'
 import { GoogleOAuthGuard } from './google-oauth.guard'
+import { Tokens } from './types'
+import { TokensResponse } from './types/tokensResponse.type'
+import { Users } from '@prisma/client'
+import { JwtAuthGuard } from './jwt-auth.guard'
 
 
 @ApiTags('Auth')
@@ -79,5 +82,13 @@ export class AuthController {
         @GetCurrentUser('refreshToken') refreshToken: string,
     ): Promise<Tokens> {
         return this.authService.refreshTokens(userId, refreshToken)
+    }
+
+    @Public()
+    @Get('local/getCurrentUser')
+    @UseGuards(JwtAuthGuard)
+    @ApiOperation({ summary: 'Get current user login' })
+    GetCurrentUser(@GetCurrentUser() user): Users {
+        return user
     }
 }
