@@ -40,7 +40,7 @@ export class AuthController {
 
     @Public()
     @Post('local/signup')
-    @UseGuards(AtGuard)
+    //@UseGuards(AtGuard)
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Sign up' })
     @ApiResponse({ status: HttpStatus.CREATED, description: 'User successfully signed up', type: TokensResponse })

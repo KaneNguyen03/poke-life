@@ -4,6 +4,7 @@ import { FoodService } from './food.service'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { Prisma } from '@prisma/client'
 import { AtStrategy } from 'src/auth/strategies'
+import { Public } from 'src/common/decorators'
 
 @ApiTags('food')
 @ApiBearerAuth()
@@ -21,6 +22,7 @@ export class FoodController {
     return this.foodService.create(createFoodDto)
   }
 
+  @Public()
   @Get()
   @ApiOperation({ summary: 'Retrieve all food items' })
   @ApiResponse({ status: 200, description: 'List of food items.' })

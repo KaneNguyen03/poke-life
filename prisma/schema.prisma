@@ -45,6 +45,7 @@ model Food {
   Description  String?
   Price        Decimal   @db.Decimal(10, 2)
   Calories     Int
+  Image        String?
   CreatedAt    DateTime  @default(now())
   UpdatedAt    DateTime  @updatedAt
   ComboItems   ComboItems[]
@@ -89,6 +90,7 @@ model OrderDetails {
   FoodID        String
   Quantity      Int
   Price         Decimal  @db.Decimal(10, 2)
+  Status        String    @default("Pending")
   Order         Orders   @relation(fields: [OrderID], references: [OrderID])
   Food          Food     @relation(fields: [FoodID], references: [FoodID])
 }
@@ -99,7 +101,7 @@ model Transactions {
   PaymentMethod  String
   Amount         Decimal   @db.Decimal(10, 2)
   TransactionDate DateTime @default(now())
-  Status         String    @default("Completed")
+  Status         String    @default("Pending")
   Order          Orders    @relation(fields: [OrderID], references: [OrderID])
 }
 

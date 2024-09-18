@@ -3,9 +3,18 @@ import { AppModule } from './app.module'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import session from 'express-session'
 import passport from 'passport'
+import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
+
+  const corsOptions: CorsOptions = {
+    origin: 'http://localhost:5173', // Replace with your frontend URL
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  }
+
+  app.enableCors(corsOptions)
 
   // Set up Swagger options
   const config = new DocumentBuilder()
