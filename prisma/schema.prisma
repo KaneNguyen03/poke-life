@@ -105,6 +105,9 @@ model ComboItems {
 model Orders {
   OrderID      String        @id @default(uuid())
   CustomerID   String
+  CustomerName String 
+  PhoneNumber String
+  Address String
   TotalPrice   Decimal       @db.Decimal(10, 2)
   OrderStatus  OrderStatus        @default(Pending)
   CreatedAt    DateTime      @default(now())
