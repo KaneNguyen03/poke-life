@@ -34,6 +34,9 @@ export class OrderService {
       }, 0);
 
       const orderData: Prisma.OrdersCreateInput = {
+        Address: createOrderDto.address,
+        PhoneNumber: createOrderDto.phoneNumber,
+        CustomerName: createOrderDto.customerName,
         TotalPrice: totalPrice,
         OrderStatus: createOrderDto.orderStatus,
         IsDeleted: false,
@@ -154,6 +157,9 @@ export class OrderService {
 
       const orderDataToUpdate: Prisma.OrdersUpdateInput = {
         OrderStatus: updateOrderDto.orderStatus,
+        PhoneNumber: updateOrderDto.phoneNumber ?? orderToUpdate.PhoneNumber,
+        CustomerName: updateOrderDto.customerName ?? orderToUpdate.CustomerName,
+        Address: updateOrderDto.address ?? orderToUpdate.Address,
       };
 
       const checkUpdateOrder = await this.databaseService.orders.update({

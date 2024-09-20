@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsEnum, IsArray, ValidateNested } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsEnum,
+  IsArray,
+  ValidateNested,
+  IsPhoneNumber,
+  IsString,
+} from 'class-validator';
 import { OrderStatus } from '@prisma/client';
 import { PaymentMethod, TransactionStatus } from '@prisma/client';
 import { CreateOrderDetailDto } from 'src/order-detail/dto/create-order-detail.dto';
@@ -16,6 +23,27 @@ export class CreateOrderDto {
   @IsNotEmpty()
   @IsEnum(OrderStatus)
   orderStatus!: OrderStatus;
+
+  @ApiProperty({
+    description: 'Name of customer',
+  })
+  @IsNotEmpty()
+  @IsString()
+  customerName!: string;
+
+  @ApiProperty({
+    description: 'Phone number of the customer',
+  })
+  @IsNotEmpty()
+  @IsPhoneNumber()
+  phoneNumber!: string;
+
+  @ApiProperty({
+    description: 'Received location',
+  })
+  @IsNotEmpty()
+  @IsString()
+  address!: string;
 
   //cái này để tạo transaction
   @ApiProperty({
