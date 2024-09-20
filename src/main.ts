@@ -9,11 +9,14 @@ import { ValidationPipe } from '@nestjs/common'
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
   app.setGlobalPrefix('api')
+
   const corsOptions: CorsOptions = {
     origin: (origin, callback) => {
+      console.log('Received origin:', origin) // Log the received origin
       const allowedOrigins = [
         'http://localhost:5173',
-        'https://poke-life-fe.vercel.app/'
+        'https://poke-life-fe.vercel.app',
+        'http://localhost:3000',
       ]
       if (allowedOrigins.includes(origin) || !origin) {
         callback(null, true) // Allow the request
