@@ -162,6 +162,22 @@ export class AuthService {
             },
         })
     }
+
+    async getUserById(id: string): Promise<Omit<Users, 'password' | 'hashRt'> | null> {
+        const user = await this.prisma.users.findUnique({
+            where: {
+                UserID: id,
+            },
+        })
+
+        if (!user) {
+            return null // User not found
+        }
+
+        // Return a new object excluding sensitive fields
+        const { Password, HashedRt, ...safeUser } = user
+        return safeUser as Omit<Users, 'password' | 'hashRt'>
+    }
 }
 
 
