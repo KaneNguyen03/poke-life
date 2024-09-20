@@ -1,32 +1,278 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 
-import { Prisma } from '@prisma/client'
+import { Prisma, TransactionStatus } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
+import { CreateOrderDto } from './dto/create-order.dto';
+import { UpdateOrderDto } from './dto/update-order.dto';
+import { OrderStatus } from '@prisma/client';
 
 @Injectable()
 export class OrderService {
-  constructor(private readonly databaseService: DatabaseService) { }
-  
-  create(createOrderDto: Prisma.OrdersCreateInput) {
-    return this.databaseService.orders.create({ data: createOrderDto })
+  constructor(private readonly databaseService: DatabaseService) {}
 
+  //DONE
+  async create(createOrderDto: CreateOrderDto, currentUserId: string) {
+    try {
+      //tí cusId đọc từ token luôn khỏi lấy qua dto
+
+      if (
+        !createOrderDto.orderDetails ||
+        createOrderDto.orderDetails.length === 0
+      ) {
+        throw new BadRequestException('Missing order details');
+      }
+
+      const orderDetailList = createOrderDto.orderDetails;
+
+      // Tính toán TotalPrice từ orderDetails
+      const totalPrice = createOrderDto.orderDetails.reduce((acc, detail) => {
+        return acc + detail.quantity * detail.price;
+      }, 0);
+
+      const orderData: Prisma.OrdersCreateInput = {
+        TotalPrice: totalPrice,
+        OrderStatus: createOrderDto.orderStatus,
+        IsDeleted: false,
+        Customer: {
+          connect: { CustomerID: currentUserId }, // Kết nối order
+        },
+      };
+
+      const checkOrder = await this.databaseService.orders.create({
+        data: orderData,
+      });
+      if (checkOrder) {
+        for (const detail of orderDetailList) {
+          const orderDetailData: Prisma.OrderDetailsCreateInput = {
+            Quantity: detail.quantity,
+            Price: detail.price,
+            Order: {
+              connect: { OrderID: checkOrder.OrderID }, // Kết nối order detail với order vừa tạo
+            },
+            Food: {
+              connect: { FoodID: detail.foodID }, // Kết nối order detail với product tương ứng
+            },
+            IsDeleted: false, // Mặc định chưa bị xóa
+          };
+
+          // Tạo OrderDetail trong database
+          const createdOrderDetail =
+            await this.databaseService.orderDetails.create({
+              data: orderDetailData,
+            });
+
+          // Kiểm tra xem OrderDetail có được tạo thành công không
+          if (!createdOrderDetail) {
+            throw new Error('Fail to create order detail when create order');
+          }
+        }
+
+        const transactionData: Prisma.TransactionsCreateInput = {
+          PaymentMethod: createOrderDto.paymentMethod,
+          Amount: totalPrice,
+          TransactionDate: new Date(), // Sử dụng ngày hiện tại nếu không có giá trị
+          Status: createOrderDto.transactionStatus,
+          IsDeleted: false, // Mặc định chưa bị xóa
+          Order: {
+            connect: { OrderID: checkOrder.OrderID }, // Kết nối order
+          },
+        };
+
+        const checkTransaction = await this.databaseService.transactions.create(
+          {
+            data: transactionData,
+          },
+        );
+        if (!checkTransaction) {
+          throw new Error('Fail to create transaction when create order');
+        } else {
+          return 'Create order successfully'; //chỉnh thêm statuscode nữa
+        }
+      } else {
+        throw new Error('Fail to create order');
+      }
+    } catch (error) {
+      console.log('Error when create order: ', error);
+    }
   }
 
-  findAll() {
-    return this.databaseService.orders.findMany()
+  //DONE
+  async findAll() {
+    try {
+      const orders = await this.databaseService.orders.findMany({
+        where: { IsDeleted: false },
+      });
+
+      if (orders.length === 0) {
+        throw new NotFoundException('No orders found');
+      }
+      return orders;
+    } catch (error) {
+      console.log('Error when get all orders: ', error);
+    }
   }
 
-  findOne(id: string) {
-    return this.databaseService.orders.findUnique({ where: { OrderID: id } })
+  //DONE
+  async findOne(id: string) {
+    try {
+      const order = await this.databaseService.orders.findUnique({
+        where: { OrderID: id, IsDeleted: false },
+      });
+
+      if (order == null) {
+        throw new NotFoundException(`Order ${id} not found`);
+      }
+
+      return order;
+    } catch (error) {
+      console.log('Error when get a order: ', error);
+    }
   }
 
-  update(id: string, updateOrderDto: Prisma.OrdersUpdateInput) {
-    return this.databaseService.orders.update({ where: { OrderID: id }, data: updateOrderDto })
+  //DONE
+  async update(id: string, updateOrderDto: UpdateOrderDto) {
+    try {
+      const orderToUpdate = await this.databaseService.orders.findUnique({
+        where: { OrderID: id },
+      });
 
+      if (!orderToUpdate) {
+        throw new NotFoundException(`Not found order ID ${id}`);
+      }
+
+      // Kiểm tra nếu status là finish hoặc cancelled
+      if (
+        orderToUpdate.OrderStatus === OrderStatus.Finished ||
+        orderToUpdate.OrderStatus === OrderStatus.Cancelled
+      ) {
+        throw new BadRequestException('Cannot edit closed order');
+      }
+
+      const orderDataToUpdate: Prisma.OrdersUpdateInput = {
+        OrderStatus: updateOrderDto.orderStatus,
+      };
+
+      const checkUpdateOrder = await this.databaseService.orders.update({
+        where: { OrderID: id },
+        data: orderDataToUpdate,
+      });
+
+      let transactionStatus;
+      if (updateOrderDto.orderStatus === OrderStatus.Finished)
+        transactionStatus = TransactionStatus.Finished;
+      else if (updateOrderDto.orderStatus === OrderStatus.Cancelled)
+        transactionStatus = TransactionStatus.Cancelled;
+
+      if (checkUpdateOrder) {
+        // Lấy transaction tương ứng với order
+        const transactionToUpdate =
+          await this.databaseService.transactions.findFirst({
+            where: {
+              OrderID: id,
+            },
+          });
+        // Nếu tìm thấy transaction
+        if (transactionToUpdate) {
+          // Chuẩn bị dữ liệu để cập nhật Transaction
+          const transactionDataToUpdate: Prisma.TransactionsUpdateInput = {
+            PaymentMethod:
+              updateOrderDto.paymentMethod ?? transactionToUpdate.PaymentMethod, // Cập nhật nếu có paymentMethod
+            Status: transactionStatus ?? TransactionStatus.Pending, // Cập nhật nếu có transactionStatus
+            IsDeleted: false, // Giữ nguyên IsDeleted
+          };
+
+          // Cập nhật Transaction trong database
+          const checkUpdateTransaction =
+            await this.databaseService.transactions.update({
+              where: { TransactionID: transactionToUpdate.TransactionID },
+              data: transactionDataToUpdate,
+            });
+
+          // Kiểm tra xem Transaction có cập nhật thành công không
+          if (!checkUpdateTransaction) {
+            throw new Error('Fail to update transaction');
+          }
+          return 'Update order successfully';
+        } else {
+          throw new NotFoundException('Transaction not found for this order');
+        }
+      } else {
+        throw new Error('Fail to update order');
+      }
+    } catch (error) {
+      console.log('Error when update order: ', error);
+    }
   }
 
-  remove(id: string) {
-    return this.databaseService.orders.delete({ where: { OrderID: id } })
+  //DONE
+  async remove(id: string) {
+    try {
+      const orderToRemove = this.databaseService.orders.findUnique({
+        where: { OrderID: id },
+      });
 
+      if (!orderToRemove)
+        throw new NotFoundException(`Not found order ID ${id}`);
+
+      const orderListToRemove =
+        await this.databaseService.orderDetails.findMany({
+          where: {
+            OrderID: id,
+          },
+        });
+
+      if (orderListToRemove.length != 0) {
+        for (const detail of orderListToRemove) {
+          const check = this.databaseService.orderDetails.update({
+            where: {
+              OrderDetailID: detail.OrderDetailID,
+            },
+            data: {
+              IsDeleted: true,
+            },
+          });
+          if (!check) throw new Error('Fail to remove order details');
+        }
+      }
+
+      const transactionToRemove =
+        await this.databaseService.transactions.findFirst({
+          where: {
+            OrderID: id,
+          },
+        });
+
+      if (transactionToRemove) {
+        const check = await this.databaseService.transactions.update({
+          where: {
+            TransactionID: transactionToRemove.TransactionID,
+          },
+          data: {
+            IsDeleted: true,
+          },
+        });
+        if (!check) throw new Error('Fail to remove transaction');
+      }
+
+      const check = await this.databaseService.orders.update({
+        where: {
+          OrderID: id,
+        },
+        data: {
+          IsDeleted: true,
+        },
+      });
+      if (check) {
+        return `Order ID ${id} is removed`;
+      } else {
+        throw new Error(`Fail to remove order ${id}`);
+      }
+    } catch (error) {
+      console.log('Error when remove order: ', error);
+    }
   }
 }

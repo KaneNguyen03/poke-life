@@ -4,6 +4,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import session from 'express-session'
 import passport from 'passport'
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface'
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
@@ -43,6 +44,13 @@ async function bootstrap() {
 
   // Set up the Swagger module
   SwaggerModule.setup('api', app, document)
+
+  //Class validator
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true, // Xóa các thuộc tính không nằm trong DTO
+    forbidNonWhitelisted: true, // Trả về lỗi khi có thuộc tính không hợp lệ
+    transform: true, // Tự động chuyển đổi kiểu dữ liệu đầu vào theo DTO
+  }));
 
   await app.listen(3000)
 }
