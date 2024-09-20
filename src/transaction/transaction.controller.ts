@@ -1,10 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 
 
-import { Prisma } from '@prisma/client'
+// import { Prisma } from '@prisma/client'
 import { AtStrategy } from 'src/auth/strategies'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { UpdateTransactionDto } from './dto/update-transaction.dto';
 
 
 
@@ -20,7 +22,8 @@ export class TransactionController {
   @ApiResponse({ status: 201, description: 'The transaction has been successfully created.' })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
-  create(@Body() createTransactionDto: Prisma.TransactionsCreateInput) {
+  @UsePipes(new ValidationPipe({ transform: true })) // ValidationPipe để kích hoạt validator
+  create(@Body() createTransactionDto: CreateTransactionDto) {
     return this.transactionService.create(createTransactionDto);
   }
 
@@ -46,7 +49,8 @@ export class TransactionController {
   @ApiResponse({ status: 200, description: 'The transaction information has been successfully updated.' })
   @ApiResponse({ status: 404, description: 'Transaction not found.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
-  update(@Param('id') id: string, @Body() updateTransactionDto: Prisma.TransactionsUpdateInput) {
+  @UsePipes(new ValidationPipe({ transform: true }))
+  update(@Param('id') id: string, @Body() updateTransactionDto: UpdateTransactionDto) {
     return this.transactionService.update(id, updateTransactionDto);
   }
 

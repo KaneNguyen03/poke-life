@@ -13,6 +13,30 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum TransactionStatus {
+  Pending
+  Finished
+  Cancelled
+}
+
+enum PaymentMethod {
+  COD
+  QRCODE
+}
+
+enum OrderStatus {
+  Pending
+  Cooking
+  Finished
+  Cancelled
+}
+
+enum UserRole {
+  Customer
+  Admin
+}
+
+
  model Users {
   UserID       String    @id @default(uuid())
   Username     String    
@@ -21,8 +45,10 @@ datasource db {
   HashedRt     String?
   PhoneNumber  String?
   Address      String?
+  Role         UserRole @default(Customer)
   CreatedAt    DateTime  @default(now())
   UpdatedAt    DateTime  @updatedAt
+  IsDeleted    Boolean  @default(false) //false = chưa xóa, true = xóa
 }
 
 model Customers {
@@ -37,6 +63,7 @@ model Customers {
   Orders       Orders[]
   Reviews      Reviews[]
   CustomDishes CustomDishes[]
+  IsDeleted    Boolean  @default(false) //false = chưa xóa, true = xóa
 }
 
 model Food {
@@ -51,6 +78,7 @@ model Food {
   ComboItems   ComboItems[]
   OrderDetails OrderDetails[]
   Reviews      Reviews[]
+  IsDeleted    Boolean  @default(false) //false = chưa xóa, true = xóa
 }
 
 model Combos {
@@ -61,6 +89,7 @@ model Combos {
   CreatedAt    DateTime    @default(now())
   UpdatedAt    DateTime    @updatedAt
   ComboItems   ComboItems[]
+  IsDeleted    Boolean  @default(false) //false = chưa xóa, true = xóa
 }
 
 model ComboItems {
@@ -70,18 +99,20 @@ model ComboItems {
   Quantity     Int
   Combo        Combos    @relation(fields: [ComboID], references: [ComboID])
   Food         Food      @relation(fields: [FoodID], references: [FoodID])
+  IsDeleted    Boolean  @default(false) //false = chưa xóa, true = xóa
 }
 
 model Orders {
   OrderID      String        @id @default(uuid())
   CustomerID   String
   TotalPrice   Decimal       @db.Decimal(10, 2)
-  OrderStatus  String        @default("Pending")
+  OrderStatus  OrderStatus        @default(Pending)
   CreatedAt    DateTime      @default(now())
   UpdatedAt    DateTime      @updatedAt
   Customer     Customers     @relation(fields: [CustomerID], references: [CustomerID])
   OrderDetails OrderDetails[]
   Transactions Transactions[]
+  IsDeleted    Boolean  @default(false) //false = chưa xóa, true = xóa
 }
 
 model OrderDetails {
@@ -90,19 +121,20 @@ model OrderDetails {
   FoodID        String
   Quantity      Int
   Price         Decimal  @db.Decimal(10, 2)
-  Status        String    @default("Pending")
   Order         Orders   @relation(fields: [OrderID], references: [OrderID])
   Food          Food     @relation(fields: [FoodID], references: [FoodID])
+  IsDeleted    Boolean  @default(false) //false = chưa xóa, true = xóa
 }
 
 model Transactions {
   TransactionID  String    @id @default(uuid())
   OrderID        String
-  PaymentMethod  String
+  PaymentMethod  PaymentMethod @default(COD)
   Amount         Decimal   @db.Decimal(10, 2)
   TransactionDate DateTime @default(now())
-  Status         String    @default("Pending")
+  Status         TransactionStatus    @default(Pending)
   Order          Orders    @relation(fields: [OrderID], references: [OrderID])
+  IsDeleted    Boolean  @default(false) //false = chưa xóa, true = xóa
 }
 
 model Reviews {
@@ -114,6 +146,7 @@ model Reviews {
   CreatedAt     DateTime  @default(now())
   Customer      Customers @relation(fields: [CustomerID], references: [CustomerID])
   Food          Food      @relation(fields: [FoodID], references: [FoodID])
+  IsDeleted    Boolean  @default(false) //false = chưa xóa, true = xóa
 }
 
 model Ingredients {
@@ -125,6 +158,7 @@ model Ingredients {
   CreatedAt     DateTime @default(now())
   UpdatedAt     DateTime @updatedAt
   CustomDishIngredients CustomDishIngredients[]
+  IsDeleted    Boolean  @default(false) //false = chưa xóa, true = xóa
 }
 
 model CustomDishes {
@@ -138,6 +172,7 @@ model CustomDishes {
   UpdatedAt     DateTime @updatedAt
   Customer      Customers @relation(fields: [CustomerID], references: [CustomerID])
   CustomDishIngredients CustomDishIngredients[]
+  IsDeleted    Boolean  @default(false) //false = chưa xóa, true = xóa
 }
 
 model CustomDishIngredients {
@@ -147,4 +182,5 @@ model CustomDishIngredients {
   Quantity               Int
   CustomDish             CustomDishes  @relation(fields: [CustomDishID], references: [CustomDishID])
   Ingredient             Ingredients   @relation(fields: [IngredientID], references: [IngredientID])
+  IsDeleted    Boolean  @default(false) //false = chưa xóa, true = xóa
 }
