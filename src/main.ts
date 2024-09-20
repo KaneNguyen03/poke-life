@@ -4,13 +4,23 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import session from 'express-session'
 import passport from 'passport'
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface'
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
   app.setGlobalPrefix('api')
   const corsOptions: CorsOptions = {
-    origin: 'http://localhost:5173', // Replace with your frontend URL
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        'http://localhost:5173',
+        'https://poke-life-fe.vercel.app/'
+      ]
+      if (allowedOrigins.includes(origin) || !origin) {
+        callback(null, true) // Allow the request
+      } else {
+        callback(new Error('Not allowed by CORS')) // Deny the request
+      }
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   }
@@ -50,7 +60,7 @@ async function bootstrap() {
     whitelist: true, // Xóa các thuộc tính không nằm trong DTO
     forbidNonWhitelisted: true, // Trả về lỗi khi có thuộc tính không hợp lệ
     transform: true, // Tự động chuyển đổi kiểu dữ liệu đầu vào theo DTO
-  }));
+  }))
 
   await app.listen(3000)
 }
