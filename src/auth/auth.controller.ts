@@ -16,6 +16,7 @@ import { Tokens } from './types'
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { TokensResponse } from './types/tokensResponse.type'
 import { GoogleOAuthGuard } from './google-oauth.guard'
+import { Users } from '@prisma/client'
 
 
 @ApiTags('Auth')
@@ -79,5 +80,11 @@ export class AuthController {
         @GetCurrentUser('refreshToken') refreshToken: string,
     ): Promise<Tokens> {
         return this.authService.refreshTokens(userId, refreshToken)
+    }
+
+    @UseGuards(AtGuard)
+    @Get('local/getCurrentUser')
+    getMe(@GetCurrentUser() user: { sub: string, email: string, iat: string, exp: string }) {
+        return this.authService.getUserById(user.sub)
     }
 }
