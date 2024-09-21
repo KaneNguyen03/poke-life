@@ -62,7 +62,6 @@ model Customers {
   UpdatedAt    DateTime  @updatedAt
   Orders       Orders[]
   Reviews      Reviews[]
-  CustomDishes CustomDishes[]
   IsDeleted    Boolean  @default(false) //false = chưa xóa, true = xóa
 }
 
@@ -79,6 +78,7 @@ model Food {
   OrderDetails OrderDetails[]
   Reviews      Reviews[]
   IsDeleted    Boolean  @default(false) //false = chưa xóa, true = xóa
+  CustomDishIngredients CustomDishIngredients[]
 }
 
 model Combos {
@@ -164,26 +164,12 @@ model Ingredients {
   IsDeleted    Boolean  @default(false) //false = chưa xóa, true = xóa
 }
 
-model CustomDishes {
-  CustomDishID  String   @id @default(uuid())
-  CustomerID    String
-  Name          String
-  Description   String?
-  TotalPrice    Decimal  @db.Decimal(10, 2)
-  TotalCalories Int
-  CreatedAt     DateTime @default(now())
-  UpdatedAt     DateTime @updatedAt
-  Customer      Customers @relation(fields: [CustomerID], references: [CustomerID])
-  CustomDishIngredients CustomDishIngredients[]
-  IsDeleted    Boolean  @default(false) //false = chưa xóa, true = xóa
-}
-
 model CustomDishIngredients {
   CustomDishIngredientID String   @id @default(uuid())
-  CustomDishID           String
+  FoodID           String
   IngredientID           String
   Quantity               Int
-  CustomDish             CustomDishes  @relation(fields: [CustomDishID], references: [CustomDishID])
+  Food             Food  @relation(fields: [FoodID], references: [FoodID])
   Ingredient             Ingredients   @relation(fields: [IngredientID], references: [IngredientID])
   IsDeleted    Boolean  @default(false) //false = chưa xóa, true = xóa
 }
