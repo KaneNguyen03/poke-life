@@ -87,4 +87,6 @@ export class OrderController {
   remove(@Param('id') id: string) {
     return this.orderService.remove(id)
   }
+
+  //TODO: Thiếu API get Order by customerID 
 }

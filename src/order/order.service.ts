@@ -49,9 +49,13 @@ export class OrderService {
       })
       if (checkOrder) {
         for (const detail of orderDetailList) {
+          const foodPrice = await this.databaseService.food.findUnique({ where: { FoodID: detail.foodID } }).then(food => food?.Price) // Lấy giá của food
+          if (!foodPrice) {
+            throw new Error('Food not found')
+          }
           const orderDetailData: Prisma.OrderDetailsCreateInput = {
             Quantity: detail.quantity,
-            Price: detail.price,
+            Price: foodPrice,
             Order: {
               connect: { OrderID: checkOrder.OrderID }, // Kết nối order detail với order vừa tạo
             },
