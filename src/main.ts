@@ -12,7 +12,6 @@ async function bootstrap() {
 
   const corsOptions: CorsOptions = {
     origin: (origin, callback) => {
-      console.log('Received origin:', origin) // Log the received origin
       const allowedOrigins = [
         'http://localhost:5173',
         'https://poke-life-fe.vercel.app',

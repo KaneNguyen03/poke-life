@@ -8,27 +8,28 @@ import {
   Delete,
   UseGuards,
   ForbiddenException,
-} from '@nestjs/common';
-import { OrderService } from './order.service';
+} from '@nestjs/common'
+import { OrderService } from './order.service'
 
 // import { Prisma } from '@prisma/client';
-import { AtStrategy } from 'src/auth/strategies';
+import { AtStrategy } from 'src/auth/strategies'
 import {
   ApiBearerAuth,
   ApiOperation,
   ApiResponse,
   ApiTags,
-} from '@nestjs/swagger';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
-import { GetCurrentUserId } from 'src/common/decorators';
+} from '@nestjs/swagger'
+import { CreateOrderDto } from './dto/create-order.dto'
+import { UpdateOrderDto } from './dto/update-order.dto'
+import { GetCurrentUser, GetCurrentUserId } from 'src/common/decorators'
+import { Users } from '@prisma/client'
 
 @ApiTags('order')
 @ApiBearerAuth()
 @UseGuards(AtStrategy)
 @Controller('order')
 export class OrderController {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(private readonly orderService: OrderService) { }
 
   @Post()
   @ApiOperation({ summary: 'Create a new order' })
@@ -40,10 +41,10 @@ export class OrderController {
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
   async create(
     @Body() createOrderDto: CreateOrderDto,
-    @GetCurrentUserId() currentUserId: string,
+    @GetCurrentUser() user: { sub: string, email: string, iat: string, exp: string },
   ) {
-    if (!currentUserId) throw new ForbiddenException('User ID not found');
-    return this.orderService.create(createOrderDto, currentUserId);
+    if (!user) throw new ForbiddenException('User ID not found')
+    return this.orderService.create(createOrderDto, user.sub)
   }
 
   @Get()
@@ -51,7 +52,7 @@ export class OrderController {
   @ApiResponse({ status: 200, description: 'List of orders.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
   findAll() {
-    return this.orderService.findAll();
+    return this.orderService.findAll()
   }
 
   @Get(':id')
@@ -60,7 +61,7 @@ export class OrderController {
   @ApiResponse({ status: 404, description: 'Orders not found.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
   findOne(@Param('id') id: string) {
-    return this.orderService.findOne(id);
+    return this.orderService.findOne(id)
   }
 
   @Patch(':id')
@@ -72,7 +73,7 @@ export class OrderController {
   @ApiResponse({ status: 404, description: 'Order not found.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
   update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-    return this.orderService.update(id, updateOrderDto);
+    return this.orderService.update(id, updateOrderDto)
   }
 
   @Delete(':id')
@@ -84,6 +85,6 @@ export class OrderController {
   @ApiResponse({ status: 404, description: 'Order item not found.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
   remove(@Param('id') id: string) {
-    return this.orderService.remove(id);
+    return this.orderService.remove(id)
   }
 }

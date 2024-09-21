@@ -27,6 +27,8 @@ export class AuthService {
                     Username: dto.username,
                     Password: hash,
                     PhoneNumber: dto.phoneNumber,
+                    Address: dto.address,
+                    Role: "Customer"
                 },
             })
             .catch((error) => {
@@ -133,7 +135,6 @@ export class AuthService {
         const existingUser = await this.prisma.users.findFirst({
             where: { Email: user.email }, // Ensure field name matches Prisma schema
         })
-        console.log(existingUser)
         if (!existingUser) {
             const newUser = await this.prisma.users.create({
                 data: {
@@ -149,7 +150,6 @@ export class AuthService {
         }
 
         const tokens = await this.getTokens(user.googleId, user.email)
-        console.log(tokens)
         await this.updateRtHash(user.googleId, tokens.refresh_token)
 
         return tokens

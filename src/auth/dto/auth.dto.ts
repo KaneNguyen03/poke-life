@@ -21,6 +21,11 @@ export class SignupDto {
   @IsNotEmpty()
   @IsString()
   phoneNumber!: string
+
+  @ApiProperty({ description: 'Address' })
+  @IsNotEmpty()
+  @IsString()
+  address!: string
 }
 
 export class SigninDto {
