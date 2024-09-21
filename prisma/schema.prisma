@@ -183,6 +183,7 @@ model CustomDishIngredients {
   CustomDishID           String
   IngredientID           String
   Quantity               Int
+  
   CustomDish             CustomDishes  @relation(fields: [CustomDishID], references: [CustomDishID])
   Ingredient             Ingredients   @relation(fields: [IngredientID], references: [IngredientID])
   IsDeleted    Boolean  @default(false) //false = chưa xóa, true = xóa

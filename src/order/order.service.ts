@@ -9,6 +9,7 @@ import { DatabaseService } from 'src/database/database.service'
 import { CreateOrderDto } from './dto/create-order.dto'
 import { UpdateOrderDto } from './dto/update-order.dto'
 import { OrderStatus } from '@prisma/client'
+import { Decimal } from '@prisma/client/runtime/library'
 
 @Injectable()
 export class OrderService {
@@ -17,22 +18,17 @@ export class OrderService {
   //DONE
   async create(createOrderDto: CreateOrderDto, currentUserId: string) {
     try {
-      //tí cusId đọc từ token luôn khỏi lấy qua dto
-
-      if (
-        !createOrderDto.orderDetails ||
-        createOrderDto.orderDetails.length === 0
-      ) {
+      // Ensure order details are provided
+      if (!createOrderDto.orderDetails || createOrderDto.orderDetails.length === 0) {
         throw new BadRequestException('Missing order details')
       }
 
       const orderDetailList = createOrderDto.orderDetails
 
-      // Tính toán TotalPrice từ orderDetails
-      const totalPrice = createOrderDto.orderDetails.reduce((acc, detail) => {
-        return acc + detail.quantity * detail.price
-      }, 0)
+      // Calculate total price from order details
+      const totalPrice = await this.calculateTotalPrice(orderDetailList)
 
+      // Create order data
       const orderData: Prisma.OrdersCreateInput = {
         Address: createOrderDto.address,
         PhoneNumber: createOrderDto.phoneNumber,
@@ -40,69 +36,87 @@ export class OrderService {
         TotalPrice: totalPrice,
         IsDeleted: false,
         Customer: {
-          connect: { CustomerID: currentUserId }, // Kết nối order
+          connect: { CustomerID: currentUserId }, // Connect order to customer
         },
       }
 
+      // Create order
       const checkOrder = await this.databaseService.orders.create({
         data: orderData,
       })
+
       if (checkOrder) {
+        // Create order details
         for (const detail of orderDetailList) {
-          const foodPrice = await this.databaseService.food.findUnique({ where: { FoodID: detail.foodID } }).then(food => food?.Price) // Lấy giá của food
-          if (!foodPrice) {
+          const food = await this.databaseService.food.findUnique({ where: { FoodID: detail.foodID } })
+          if (!food) {
             throw new Error('Food not found')
           }
+
           const orderDetailData: Prisma.OrderDetailsCreateInput = {
             Quantity: detail.quantity,
-            Price: foodPrice,
+            Price: new Decimal(food.Price), // Ensure Price is a Decimal
             Order: {
-              connect: { OrderID: checkOrder.OrderID }, // Kết nối order detail với order vừa tạo
+              connect: { OrderID: checkOrder.OrderID }, // Connect order detail with the created order
             },
             Food: {
-              connect: { FoodID: detail.foodID }, // Kết nối order detail với product tương ứng
+              connect: { FoodID: detail.foodID }, // Connect order detail with the corresponding food
             },
-            IsDeleted: false, // Mặc định chưa bị xóa
+            IsDeleted: false, // Default not deleted
           }
 
-          // Tạo OrderDetail trong database
-          const createdOrderDetail =
-            await this.databaseService.orderDetails.create({
-              data: orderDetailData,
-            })
+          // Create order detail in the database
+          const createdOrderDetail = await this.databaseService.orderDetails.create({
+            data: orderDetailData,
+          })
 
-          // Kiểm tra xem OrderDetail có được tạo thành công không
+          // Check if order detail was created successfully
           if (!createdOrderDetail) {
-            throw new Error('Fail to create order detail when create order')
+            throw new Error('Fail to create order detail when creating order')
           }
         }
 
+        // Create transaction data
         const transactionData: Prisma.TransactionsCreateInput = {
           PaymentMethod: createOrderDto.paymentMethod,
-          Amount: totalPrice,
-          TransactionDate: new Date(), // Sử dụng ngày hiện tại nếu không có giá trị
-          IsDeleted: false, // Mặc định chưa bị xóa
+          Amount: new Decimal(totalPrice), // Ensure Amount is a Decimal
+          TransactionDate: new Date(), // Use current date if not provided
+          IsDeleted: false, // Default not deleted
           Order: {
-            connect: { OrderID: checkOrder.OrderID }, // Kết nối order
+            connect: { OrderID: checkOrder.OrderID }, // Connect order
           },
         }
 
-        const checkTransaction = await this.databaseService.transactions.create(
-          {
-            data: transactionData,
-          },
-        )
+        // Create transaction
+        const checkTransaction = await this.databaseService.transactions.create({
+          data: transactionData,
+        })
+
         if (!checkTransaction) {
-          throw new Error('Fail to create transaction when create order')
+          throw new Error('Fail to create transaction when creating order')
         } else {
-          return 'Create order successfully' //chỉnh thêm statuscode nữa
+          return 'Create order successfully' // Consider adding status code
         }
       } else {
         throw new Error('Fail to create order')
       }
     } catch (error) {
-      console.log('Error when create order: ', error)
+      console.log('Error when creating order: ', error)
+      throw error
     }
+  }
+
+  // Helper function to calculate total price
+  private async calculateTotalPrice(orderDetails): Promise<Decimal> {
+    const prices = await Promise.all(orderDetails.map(async (detail) => {
+      const food = await this.databaseService.food.findUnique({ where: { FoodID: detail.foodID } })
+      if (!food) {
+        throw new Error('Food not found')
+      }
+      return new Decimal(detail.quantity).times(new Decimal(food.Price)) // Use Decimal operations
+    }))
+
+    return prices.reduce((acc, price) => acc.plus(price), new Decimal(0)) // Use Decimal operations
   }
 
   //DONE
