@@ -13,14 +13,13 @@ export class UpdateOrderDto {
   @ApiProperty({
     description: 'Status of the order',
     enum: OrderStatus,
-    default: OrderStatus.Pending,
   })
   @IsNotEmpty()
   @IsEnum(OrderStatus)
   orderStatus!: OrderStatus;
 
   @ApiProperty({
-    description: 'Name of customer',
+    description: 'Name of the customer',
     required: false,
   })
   @IsOptional()
@@ -46,7 +45,6 @@ export class UpdateOrderDto {
   @ApiProperty({
     description: 'PaymentMethod of the transaction',
     enum: PaymentMethod,
-    default: PaymentMethod.COD,
     required: false,
   })
   @IsOptional()

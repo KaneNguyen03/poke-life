@@ -38,6 +38,7 @@ export class OrderService {
         CustomerName: createOrderDto.customerName,
         TotalPrice: totalPrice,
         IsDeleted: false,
+        OrderStatus: OrderStatus.Pending,
         Customer: {
           connect: { CustomerID: currentUserId }, // Connect order to customer
         },
@@ -88,6 +89,7 @@ export class OrderService {
           Amount: new Decimal(totalPrice), // Ensure Amount is a Decimal
           TransactionDate: new Date(), // Use current date if not provided
           IsDeleted: false, // Default not deleted
+          Status: TransactionStatus.Pending,
           Order: {
             connect: { OrderID: checkOrder.OrderID }, // Connect order
           },
