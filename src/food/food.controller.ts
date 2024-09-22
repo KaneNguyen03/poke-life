@@ -19,6 +19,7 @@ import {
 import { Prisma } from '@prisma/client';
 import { AtStrategy } from 'src/auth/strategies';
 import { Public } from 'src/common/decorators';
+import { CreateFoodDto, CreateCustomFoodDto } from './dto/create-food.dto';
 
 @ApiTags('food')
 @ApiBearerAuth()
@@ -35,8 +36,20 @@ export class FoodController {
   })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
-  async create(@Body() createFoodDto: Prisma.FoodCreateInput) {
+  async create(@Body() createFoodDto: CreateFoodDto) {
     return this.foodService.create(createFoodDto);
+  }
+
+  @Post('customDish')
+  @ApiOperation({ summary: 'Create a new custom food item' })
+  @ApiResponse({
+    status: 201,
+    description: 'The custom food has been successfully created.',
+  })
+  @ApiResponse({ status: 400, description: 'Bad Request.' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error.' })
+  async createCustomDish(@Body() createFoodDto: CreateCustomFoodDto) {
+    return this.foodService.createCustomDish(createFoodDto);
   }
 
   @Public()

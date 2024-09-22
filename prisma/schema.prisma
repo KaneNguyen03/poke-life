@@ -157,6 +157,7 @@ model Ingredients {
   Name          String
   Description   String?
   Calories      Int
+  IngredientImage   String? 
   Price         Decimal  @db.Decimal(10, 2)
   CreatedAt     DateTime @default(now())
   UpdatedAt     DateTime @updatedAt
