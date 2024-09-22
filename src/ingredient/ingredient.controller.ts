@@ -1,11 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { IngredientService } from './ingredient.service';
 // import { CreateIngredientDto } from './dto/create-ingredient.dto';
 // import { UpdateIngredientDto } from './dto/update-ingredient.dto';
-import { Prisma } from '@prisma/client'
-import { AtStrategy } from 'src/auth/strategies'
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-
+import { Prisma } from '@prisma/client';
+import { AtStrategy } from 'src/auth/strategies';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('ingredient')
 @ApiBearerAuth()
@@ -16,10 +29,13 @@ export class IngredientController {
 
   @Post()
   @ApiOperation({ summary: 'Create a new ingredient' })
-  @ApiResponse({ status: 201, description: 'The ingredient has been successfully created.' })
+  @ApiResponse({
+    status: 201,
+    description: 'The ingredient has been successfully created.',
+  })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
-  create(@Body() createIngredientDto: Prisma.IngredientsCreateInput) {
+  async create(@Body() createIngredientDto: Prisma.IngredientsCreateInput) {
     return this.ingredientService.create(createIngredientDto);
   }
 
@@ -27,7 +43,7 @@ export class IngredientController {
   @ApiOperation({ summary: 'Retrieve all ingredients' })
   @ApiResponse({ status: 200, description: 'List of ingredients.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
-  findAll() {
+  async findAll() {
     return this.ingredientService.findAll();
   }
 
@@ -36,25 +52,34 @@ export class IngredientController {
   @ApiResponse({ status: 200, description: 'The ingredient information.' })
   @ApiResponse({ status: 404, description: 'Ingredient not found.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string) {
     return this.ingredientService.findOne(id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update a ingredient' })
-  @ApiResponse({ status: 200, description: 'The ingredient information has been successfully updated.' })
+  @ApiResponse({
+    status: 200,
+    description: 'The ingredient information has been successfully updated.',
+  })
   @ApiResponse({ status: 404, description: 'Ingredient not found.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
-  update(@Param('id') id: string, @Body() updateIngredientDto: Prisma.IngredientsUpdateInput) {
+  async update(
+    @Param('id') id: string,
+    @Body() updateIngredientDto: Prisma.IngredientsUpdateInput,
+  ) {
     return this.ingredientService.update(id, updateIngredientDto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a ingredient' })
-  @ApiResponse({ status: 200, description: 'The ingredient has been successfully deleted.' })
+  @ApiResponse({
+    status: 200,
+    description: 'The ingredient has been successfully deleted.',
+  })
   @ApiResponse({ status: 404, description: 'Ingredient item not found.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string) {
     return this.ingredientService.remove(id);
   }
 }
