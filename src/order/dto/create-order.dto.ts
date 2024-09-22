@@ -25,7 +25,9 @@ export class CreateOrderDto {
     description: 'Phone number of the customer',
   })
   @IsNotEmpty()
-  @IsPhoneNumber()
+  @IsPhoneNumber('VN', {
+    message: 'Phone number must be a valid Vietnamese phone number',
+  })
   phoneNumber!: string;
 
   @ApiProperty({

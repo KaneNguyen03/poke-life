@@ -11,6 +11,10 @@ export class FoodService {
     return await this.databaseService.food.create({ data: createFoodDto });
   }
 
+  async createCustomDish(createFoodDto: Prisma.FoodCreateInput) {
+    return await this.databaseService.food.create({ data: createFoodDto });
+  }
+
   async findAll() {
     return await this.databaseService.food.findMany();
   }

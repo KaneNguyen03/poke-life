@@ -1,11 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsEnum, Min, IsDecimal, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsEnum, Min, IsDecimal } from 'class-validator';
 import { PaymentMethod, TransactionStatus } from '@prisma/client';
 
 export class CreateTransactionDto {
   @ApiProperty({ description: 'Identified code of the order' })
   @IsNotEmpty()
-  @IsUUID()
   orderID!: string;
 
   @ApiProperty({
