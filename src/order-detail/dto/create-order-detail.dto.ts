@@ -4,7 +4,7 @@ import { IsNotEmpty, IsNumber, Min, IsDecimal, IsUUID } from 'class-validator'
 export class CreateOrderDetailDto {
   @ApiProperty({ description: 'Identified code of the food' })
   @IsNotEmpty()
-  @IsUUID()
+  // @IsUUID()
   foodID!: string
 
   @ApiProperty({ description: 'Quantity of the order detail' })
