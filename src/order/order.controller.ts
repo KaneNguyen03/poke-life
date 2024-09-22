@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   ForbiddenException,
+  Query,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 
@@ -51,8 +52,12 @@ export class OrderController {
   @ApiOperation({ summary: 'Retrieve all orders' })
   @ApiResponse({ status: 200, description: 'List of orders.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
-  async findAll() {
-    return this.orderService.findAll();
+  async findAll(
+    @Query('pageIndex') pageIndex: number = 1, // Mặc định là trang 1
+    @Query('pageSize') pageSize: number = 10, // Mặc định là 10 mục trên mỗi trang
+    @Query('keyword') keyword?: string, // Từ khóa tìm kiếm tùy chọn
+  ) {
+    return await this.orderService.findAll(pageIndex, pageSize, keyword);
   }
 
   @Get('customerID')
@@ -68,9 +73,17 @@ export class OrderController {
       iat: string;
       exp: string;
     },
+    @Query('pageIndex') pageIndex: number = 1, // Mặc định là trang 1
+    @Query('pageSize') pageSize: number = 10, // Mặc định là 10 mục trên mỗi trang
+    @Query('keyword') keyword?: string, // Từ khóa tìm kiếm tùy chọn
   ) {
     if (!user) throw new ForbiddenException('User ID not found');
-    return this.orderService.findAllByCustomerID(user.sub);
+    return this.orderService.findAllByCustomerID(
+      user.sub,
+      pageIndex,
+      pageSize,
+      keyword,
+    );
   }
 
   @Get(':id')

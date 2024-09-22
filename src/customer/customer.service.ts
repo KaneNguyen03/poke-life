@@ -1,30 +1,38 @@
 import { Injectable } from '@nestjs/common';
 
-import { Prisma } from '@prisma/client'
+import { Prisma } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
-
 
 @Injectable()
 export class CustomerService {
-  constructor(private readonly databaseService: DatabaseService) { }
+  constructor(private readonly databaseService: DatabaseService) {}
 
-  create(createCustomerDto: Prisma.CustomersCreateInput) {
-    return this.databaseService.customers.create({ data: createCustomerDto })
+  async create(createCustomerDto: Prisma.CustomersCreateInput) {
+    return await this.databaseService.customers.create({
+      data: createCustomerDto,
+    });
   }
 
-  findAll() {
-    return this.databaseService.customers.findMany()
+  async findAll() {
+    return await this.databaseService.customers.findMany();
   }
 
-  findOne(id: string) {
-    return this.databaseService.customers.findUnique({ where: { CustomerID: id } })
+  async findOne(id: string) {
+    return await this.databaseService.customers.findUnique({
+      where: { CustomerID: id },
+    });
   }
 
-  update(id: string, updateCustomerDto: Prisma.CustomersUpdateInput) {
-    return this.databaseService.customers.update({ where: { CustomerID: id }, data: updateCustomerDto })
+  async update(id: string, updateCustomerDto: Prisma.CustomersUpdateInput) {
+    return await this.databaseService.customers.update({
+      where: { CustomerID: id },
+      data: updateCustomerDto,
+    });
   }
 
-  remove(id: string) {
-    return this.databaseService.customers.delete({ where: { CustomerID: id } })
+  async remove(id: string) {
+    return await this.databaseService.customers.delete({
+      where: { CustomerID: id },
+    });
   }
 }

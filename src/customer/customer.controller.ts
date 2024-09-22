@@ -1,10 +1,23 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { CustomerService } from './customer.service';
 
-import { Prisma } from '@prisma/client'
-import { AtStrategy } from 'src/auth/strategies'
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-
+import { Prisma } from '@prisma/client';
+import { AtStrategy } from 'src/auth/strategies';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('customer')
 @ApiBearerAuth()
@@ -15,10 +28,13 @@ export class CustomerController {
 
   @Post()
   @ApiOperation({ summary: 'Create a new customer' })
-  @ApiResponse({ status: 201, description: 'The customer has been successfully created.' })
+  @ApiResponse({
+    status: 201,
+    description: 'The customer has been successfully created.',
+  })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
-  create(@Body() createCustomerDto: Prisma.CustomersCreateInput) {
+  async create(@Body() createCustomerDto: Prisma.CustomersCreateInput) {
     return this.customerService.create(createCustomerDto);
   }
 
@@ -26,7 +42,7 @@ export class CustomerController {
   @ApiOperation({ summary: 'Retrieve all customers' })
   @ApiResponse({ status: 200, description: 'List of customers.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
-  findAll() {
+  async findAll() {
     return this.customerService.findAll();
   }
 
@@ -35,25 +51,34 @@ export class CustomerController {
   @ApiResponse({ status: 200, description: 'The customer information.' })
   @ApiResponse({ status: 404, description: 'Customer not found.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string) {
     return this.customerService.findOne(id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update a customer information' })
-  @ApiResponse({ status: 200, description: 'The customer information has been successfully updated.' })
+  @ApiResponse({
+    status: 200,
+    description: 'The customer information has been successfully updated.',
+  })
   @ApiResponse({ status: 404, description: 'Customer not found.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
-  update(@Param('id') id: string, @Body() updateCustomerDto: Prisma.CustomersUpdateInput) {
+  async update(
+    @Param('id') id: string,
+    @Body() updateCustomerDto: Prisma.CustomersUpdateInput,
+  ) {
     return this.customerService.update(id, updateCustomerDto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a customer' })
-  @ApiResponse({ status: 200, description: 'The customer has been successfully deleted.' })
+  @ApiResponse({
+    status: 200,
+    description: 'The customer has been successfully deleted.',
+  })
   @ApiResponse({ status: 404, description: 'Customer item not found.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string) {
     return this.customerService.remove(id);
   }
 }

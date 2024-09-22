@@ -6,6 +6,7 @@ import {
   ValidateNested,
   IsPhoneNumber,
   IsString,
+  IsOptional,
 } from 'class-validator';
 import { PaymentMethod } from '@prisma/client';
 import { CreateOrderDetailDto } from 'src/order-detail/dto/create-order-detail.dto';
@@ -53,4 +54,12 @@ export class CreateOrderDto {
   @ValidateNested({ each: true })
   @Type(() => CreateOrderDetailDto)
   orderDetails: CreateOrderDetailDto[] | undefined;
+
+  @ApiProperty({
+    description: 'Identified code of combo',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  comboID?: string;
 }

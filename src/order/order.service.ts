@@ -29,7 +29,45 @@ export class OrderService {
       const orderDetailList = createOrderDto.orderDetails;
 
       // Calculate total price from order details
-      const totalPrice = await this.calculateTotalPrice(orderDetailList);
+      let totalPrice = await this.calculateTotalPrice(orderDetailList);
+
+      //xử lí nếu có combo
+      let comboItemList;
+      if (createOrderDto.comboID != null) {
+        const combo = await this.databaseService.combos.findUnique({
+          where: {
+            ComboID: createOrderDto.comboID,
+          },
+        });
+        if (!combo)
+          throw new NotFoundException(
+            `Not found combo ID ${createOrderDto.comboID}`,
+          );
+
+        //cộng giá combo vào total tạo order nếu có combo
+        totalPrice = totalPrice.plus(new Decimal(combo.Price));
+        // eslint-disable-next-line prefer-const
+        comboItemList = await this.databaseService.comboItems.findMany({
+          where: {
+            ComboID: combo.ComboID,
+          },
+        });
+        if (comboItemList.length == 0)
+          throw new NotFoundException(
+            `Not found any items of combo ID ${createOrderDto.comboID}`,
+          );
+        for (const item of comboItemList) {
+          const foodItem = await this.databaseService.food.findUnique({
+            where: {
+              FoodID: item.FoodID,
+            },
+          });
+          if (!foodItem)
+            throw new NotFoundException(
+              `Not found any food of combo item ID ${item.ComboItemID}`,
+            );
+        }
+      }
 
       // Create order data
       const orderData: Prisma.OrdersCreateInput = {
@@ -80,6 +118,43 @@ export class OrderService {
           // Check if order detail was created successfully
           if (!createdOrderDetail) {
             throw new Error('Fail to create order detail when creating order');
+          }
+        }
+
+        //tạo orderdetails nếu có combo
+        if (comboItemList.length != 0) {
+          for (const item of comboItemList) {
+            const food = await this.databaseService.food.findUnique({
+              where: { FoodID: item.foodID },
+            });
+            if (!food) {
+              throw new Error('Food of combo not found');
+            }
+
+            const orderDetailData: Prisma.OrderDetailsCreateInput = {
+              Quantity: item.quantity,
+              Price: new Decimal(food.Price), // Ensure Price is a Decimal
+              Order: {
+                connect: { OrderID: checkOrder.OrderID }, // Connect order detail with the created order
+              },
+              Food: {
+                connect: { FoodID: item.foodID }, // Connect order detail with the corresponding food
+              },
+              IsDeleted: false, // Default not deleted
+            };
+
+            // Create order detail in the database
+            const createdOrderDetail =
+              await this.databaseService.orderDetails.create({
+                data: orderDetailData,
+              });
+
+            // Check if order detail was created successfully
+            if (!createdOrderDetail) {
+              throw new Error(
+                'Fail to create order detail from combo when creating order',
+              );
+            }
           }
         }
 
@@ -134,15 +209,35 @@ export class OrderService {
   }
 
   //DONE
-  async findAll() {
+  async findAll(pageIndex: number, pageSize: number, keyword?: string) {
     try {
+      const skip = (pageIndex - 1) * pageSize;
+      const take = pageSize;
+
+      // Điều kiện tìm kiếm
+      const where: Prisma.OrdersWhereInput = {
+        IsDeleted: false, // Lọc những đơn hàng không bị xóa
+        ...(keyword && {
+          OR: [
+            { OrderID: { contains: keyword, mode: 'insensitive' } },
+            { CustomerName: { contains: keyword, mode: 'insensitive' } },
+            // Thêm các trường khác nếu cần
+          ],
+        }),
+      };
+
+      // Truy vấn các đơn hàng từ cơ sở dữ liệu
       const orders = await this.databaseService.orders.findMany({
-        where: { IsDeleted: false },
+        skip,
+        take,
+        where,
       });
 
+      // Nếu không tìm thấy đơn hàng nào, ném ngoại lệ
       if (orders.length === 0) {
         throw new NotFoundException('No orders found');
       }
+
       return orders;
     } catch (error) {
       console.log('Error when get all orders: ', error);
@@ -150,17 +245,40 @@ export class OrderService {
   }
 
   //DONE
-  async findAllByCustomerID(currentUserId: string) {
+  async findAllByCustomerID(
+    currentUserId: string,
+    pageIndex: number,
+    pageSize: number,
+    keyword?: string,
+  ) {
     try {
-      const orders = await this.databaseService.orders.findMany({
-        where: { IsDeleted: false, CustomerID: currentUserId },
-      });
+      const skip = (pageIndex - 1) * pageSize;
+      const take = pageSize;
 
-      const curUser = await this.databaseService.customers.findUnique({
-        where: { CustomerID: currentUserId },
+      // Điều kiện tìm kiếm
+      const where: Prisma.OrdersWhereInput = {
+        IsDeleted: false,
+        CustomerID: currentUserId,
+        ...(keyword && {
+          OR: [
+            { OrderID: { contains: keyword, mode: 'insensitive' } },
+            { CustomerName: { contains: keyword, mode: 'insensitive' } },
+            // Thêm các trường khác nếu cần
+          ],
+        }),
+      };
+
+      // Truy vấn các đơn hàng từ cơ sở dữ liệu
+      const orders = await this.databaseService.orders.findMany({
+        skip,
+        take,
+        where,
       });
 
       if (orders.length === 0) {
+        const curUser = await this.databaseService.customers.findUnique({
+          where: { CustomerID: currentUserId },
+        });
         throw new NotFoundException(
           `Current user ${curUser?.FullName} doesn't have any orders`,
         );
