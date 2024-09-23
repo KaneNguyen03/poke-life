@@ -40,6 +40,16 @@ export class AuthService {
                 throw error
             })
 
+        await this.prisma.customers.create({
+            data: {
+                CustomerID: user.UserID,
+                Address: dto.address,
+                PhoneNumber: dto.phoneNumber,
+                FullName: dto.username,
+                Email: user.Email,
+            },
+        })
+
         const tokens = await this.getTokens(user.UserID, user.Email)
         await this.updateRtHash(user.UserID, tokens.refresh_token)
 
