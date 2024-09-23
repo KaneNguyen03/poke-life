@@ -86,6 +86,8 @@ model Combos {
   Name         String
   Description  String?
   Price        Decimal     @db.Decimal(10, 2)
+  TotalCalo    Int?
+  ImageComboURL String?
   CreatedAt    DateTime    @default(now())
   UpdatedAt    DateTime    @updatedAt
   ComboItems   ComboItems[]

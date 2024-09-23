@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { FoodService } from './food.service';
@@ -57,8 +58,12 @@ export class FoodController {
   @ApiOperation({ summary: 'Retrieve all food items' })
   @ApiResponse({ status: 200, description: 'List of food items.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
-  async findAll() {
-    return this.foodService.findAll();
+  async findAll(
+    @Query('pageIndex') pageIndex: number = 1, // Mặc định là trang 1
+    @Query('pageSize') pageSize: number = 10, // Mặc định là 10 mục trên mỗi trang
+    @Query('keyword') keyword?: string, // Từ khóa tìm kiếm tùy chọn
+  ) {
+    return this.foodService.findAll(pageIndex, pageSize, keyword);
   }
 
   @Get(':id')

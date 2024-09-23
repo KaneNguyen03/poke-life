@@ -1,12 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsNotEmpty,
   IsString,
   IsOptional,
   IsNumber,
   Min,
-  IsDecimal,
   IsArray,
   ValidateNested,
   ArrayNotEmpty,
@@ -25,10 +24,17 @@ export class CreateFoodDto {
   @IsString()
   description?: string;
 
+  // @ApiProperty({ description: 'Price of the food' })
+  // @IsNotEmpty()
+  // @IsDecimal({ decimal_digits: '2', force_decimal: true })
+  // @Min(1)
+  // price!: number;
+
   @ApiProperty({ description: 'Price of the food' })
   @IsNotEmpty()
-  @IsDecimal({ decimal_digits: '2', force_decimal: true })
+  @IsNumber()
   @Min(1)
+  @Transform(({ value }) => parseFloat(parseFloat(value).toFixed(2))) // Chuyển đổi thành số thập phân với 2 chữ số
   price!: number;
 
   @ApiProperty({ description: 'Calories of the food' })
@@ -44,7 +50,7 @@ export class CreateFoodDto {
 }
 
 export class CreateCustomFoodDto {
-  // Mảng các order details, nếu có
+  // Mảng các ingredientList
   @ApiProperty({
     description: 'Array of ingredient ID and its quantity',
     type: [CustomDishIngredient],
