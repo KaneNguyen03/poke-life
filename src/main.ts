@@ -10,6 +10,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule)
   app.setGlobalPrefix('api')
 
+  // Define CORS options
   const corsOptions: CorsOptions = {
     origin: (origin, callback) => {
       const allowedOrigins = [
@@ -27,6 +28,7 @@ async function bootstrap() {
     credentials: true,
   }
 
+  // Enable CORS with the defined options
   app.enableCors(corsOptions)
 
   // Set up Swagger options
@@ -36,13 +38,6 @@ async function bootstrap() {
     .addBearerAuth() // Add Bearer Auth
     .setVersion('1.0')
     .build()
-
-  // Enable CORS for http://localhost:5173
-  app.enableCors({
-    origin: 'http://localhost:5173',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-  })
 
   // Configure session middleware
   app.use(
@@ -58,17 +53,18 @@ async function bootstrap() {
   )
   app.use(passport.initialize())
   app.use(passport.session())
+
   // Create Swagger document
   const document = SwaggerModule.createDocument(app, config)
 
   // Set up the Swagger module
   SwaggerModule.setup('api', app, document)
 
-  //Class validator
+  // Class validator
   app.useGlobalPipes(new ValidationPipe({
-    whitelist: true, // Xóa các thuộc tính không nằm trong DTO
-    forbidNonWhitelisted: true, // Trả về lỗi khi có thuộc tính không hợp lệ
-    transform: true, // Tự động chuyển đổi kiểu dữ liệu đầu vào theo DTO
+    whitelist: true, // Remove properties not in DTO
+    forbidNonWhitelisted: true, // Return error for invalid properties
+    transform: true, // Automatically transform input types according to DTO
   }))
 
   await app.listen(3000)
