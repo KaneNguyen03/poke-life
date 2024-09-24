@@ -53,10 +53,10 @@ export class OrderDetailService {
       // Điều kiện tìm kiếm
       const where: Prisma.OrderDetailsWhereInput = {
         IsDeleted: false, // Lọc những đơn hàng không bị xóa
+        OrderID: id,
         ...(keyword && {
           OR: [
             { OrderID: { contains: keyword, mode: 'insensitive' } },
-            { OrderID: { contains: id, mode: 'insensitive' } },
             { FoodID: { contains: keyword, mode: 'insensitive' } },
             // Thêm các trường khác nếu cần
           ],
