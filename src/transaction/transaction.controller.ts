@@ -44,6 +44,14 @@ export class TransactionController {
     return this.transactionService.create(createTransactionDto);
   }
 
+  @Get('/statistics')
+  @ApiOperation({ summary: 'Get statistics of admin dashboard' })
+  @ApiResponse({ status: 200, description: 'Statistics of admin dashboard.' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error.' })
+  async getStatistics() {
+    return this.transactionService.getStatistics();
+  }
+
   @Get()
   @ApiOperation({ summary: 'Retrieve all transactions' })
   @ApiResponse({ status: 200, description: 'List of transactions.' })

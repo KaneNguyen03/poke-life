@@ -214,33 +214,48 @@ export class OrderService {
       const skip = (pageIndex - 1) * pageSize
       const take = pageSize
 
-      // Điều kiện tìm kiếm
+      // Condition for filtering
       const where: Prisma.OrdersWhereInput = {
-        IsDeleted: false, // Lọc những đơn hàng không bị xóa
+        IsDeleted: false, // Filter out deleted orders
         ...(keyword && {
           OR: [
             { OrderID: { contains: keyword, mode: 'insensitive' } },
             { CustomerName: { contains: keyword, mode: 'insensitive' } },
-            // Thêm các trường khác nếu cần
+            // Add other fields if necessary
           ],
         }),
       }
 
-      // Truy vấn các đơn hàng từ cơ sở dữ liệu
+      // Count the total number of orders matching the criteria
+      const totalOrders = await this.databaseService.orders.count({ where })
+
+      // Fetch the orders from the database
       const orders = await this.databaseService.orders.findMany({
         skip,
         take,
         where,
       })
 
-      // Nếu không tìm thấy đơn hàng nào, ném ngoại lệ
+      // If no orders are found, throw an exception
       if (orders.length === 0) {
         throw new NotFoundException('No orders found')
       }
 
-      return orders
+      // Calculate total pages
+      const totalPages = Math.ceil(totalOrders / pageSize)
+
+      // Return orders with pagination info
+      return {
+        orders,
+        pagination: {
+          pageIndex,
+          pageSize,
+          totalPages,
+        },
+      }
     } catch (error) {
       console.log('Error when get all orders: ', error)
+      throw error // Rethrow the error to be handled by the calling function or middleware
     }
   }
 
