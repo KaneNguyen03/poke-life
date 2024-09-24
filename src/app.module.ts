@@ -2,14 +2,14 @@ import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { APP_GUARD } from '@nestjs/core'
 import { PassportModule } from '@nestjs/passport'
-import { IngredientModule } from './ingredient/ingredient.module'
-import { CustomDishModule } from './custom-dish/custom-dish.module'
 import { CustomDishIngredientModule } from './custom-dish-ingredient/custom-dish-ingredient.module'
+import { IngredientModule } from './ingredient/ingredient.module'
 
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
 import { AuthModule } from './auth/auth.module'
 import { ComboItemModule } from './combo-item/combo-item.module'
 import { ComboModule } from './combo/combo.module'
+import { AtGuard } from './common/guards'
 import { CustomerModule } from './customer/customer.module'
 import { FoodModule } from './food/food.module'
 import { OrderDetailModule } from './order-detail/order-detail.module'
@@ -17,7 +17,6 @@ import { OrderModule } from './order/order.module'
 import { PrismaModule } from './prisma/prisma.module'
 import { ReviewModule } from './review/review.module'
 import { TransactionModule } from './transaction/transaction.module'
-import { AtGuard } from './common/guards'
 
 @Module({
   imports: [
@@ -33,9 +32,7 @@ import { AtGuard } from './common/guards'
     TransactionModule,
     ReviewModule,
     PassportModule.register({ session: true }),
-
     IngredientModule,
-    CustomDishModule,
     CustomDishIngredientModule,
 
     ThrottlerModule.forRoot([
