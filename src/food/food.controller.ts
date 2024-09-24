@@ -2,33 +2,33 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   Param,
   Patch,
   Post,
   Query,
   UseGuards,
-} from '@nestjs/common'
-import { FoodService } from './food.service'
+} from '@nestjs/common';
+import { FoodService } from './food.service';
 
 import {
   ApiBearerAuth,
   ApiOperation,
-  ApiQuery,
   ApiResponse,
   ApiTags,
-} from '@nestjs/swagger'
-import { Prisma } from '@prisma/client'
-import { AtStrategy } from 'src/auth/strategies'
-import { Public } from 'src/common/decorators'
-import { CreateFoodDto, CreateCustomFoodDto } from './dto/create-food.dto'
+} from '@nestjs/swagger';
+import { Prisma } from '@prisma/client';
+import { AtStrategy } from 'src/auth/strategies';
+import { GetCurrentUser, Public } from 'src/common/decorators';
+import { CreateFoodDto, CreateCustomFoodDto } from './dto/create-food.dto';
 
 @ApiTags('food')
 @ApiBearerAuth()
 @UseGuards(AtStrategy)
 @Controller('food')
 export class FoodController {
-  constructor(private readonly foodService: FoodService) { }
+  constructor(private readonly foodService: FoodService) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new food item' })
@@ -39,7 +39,7 @@ export class FoodController {
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
   async create(@Body() createFoodDto: CreateFoodDto) {
-    return this.foodService.create(createFoodDto)
+    return this.foodService.create(createFoodDto);
   }
 
   @Post('customDish')
@@ -51,7 +51,7 @@ export class FoodController {
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
   async createCustomDish(@Body() createFoodDto: CreateCustomFoodDto) {
-    return this.foodService.createCustomDish(createFoodDto)
+    return this.foodService.createCustomDish(createFoodDto);
   }
 
   @Public()
@@ -59,24 +59,46 @@ export class FoodController {
   @ApiOperation({ summary: 'Retrieve all food items' })
   @ApiResponse({ status: 200, description: 'List of food items.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
-  @ApiQuery({ name: 'pageIndex', required: false, type: Number, description: 'Page index, default is 1' })
-  @ApiQuery({ name: 'pageSize', required: false, type: Number, description: 'Number of items per page, default is 10' })
-  @ApiQuery({ name: 'keyword', required: false, type: String, description: 'Optional search keyword' })
   async findAll(
-    @Query('pageIndex') pageIndex?: string, // Optional parameter as string
-    @Query('pageSize') pageSize?: string, // Optional parameter as string
-    @Query('keyword') keyword?: string, // Optional parameter
+    @Query('pageIndex') pageIndex: number = 1, // Mặc định là trang 1
+    @Query('pageSize') pageSize: number = 10, // Mặc định là 10 mục trên mỗi trang
+    @Query('keyword') keyword?: string, // Từ khóa tìm kiếm tùy chọn
   ) {
-    // Parse the query parameters to integers and apply default values if parsing fails
-    const parsedPageIndex = parseInt(pageIndex || '', 10)
-    const parsedPageSize = parseInt(pageSize || '', 10)
+    return this.foodService.findAll(pageIndex, pageSize, keyword);
+  }
 
-    // Set default values if parsing results in NaN
-    const finalPageIndex = isNaN(parsedPageIndex) ? 1 : parsedPageIndex
-    const finalPageSize = isNaN(parsedPageSize) ? 10 : parsedPageSize
-    const finalKeyword = keyword ?? ''
+  @Public()
+  @Get('customer')
+  @ApiOperation({ summary: 'Retrieve all food items for customer' })
+  @ApiResponse({ status: 200, description: 'List of food items.' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error.' })
+  async findAllForCustomer(
+    @Query('pageIndex') pageIndex: number = 1, // Mặc định là trang 1
+    @Query('pageSize') pageSize: number = 10, // Mặc định là 10 mục trên mỗi trang
+    @Query('keyword') keyword?: string, // Từ khóa tìm kiếm tùy chọn
+  ) {
+    return this.foodService.findAllForCustomer(pageIndex, pageSize, keyword);
+  }
 
-    return this.foodService.findAll(finalPageIndex, finalPageSize, finalKeyword)
+  @Public()
+  @Get('customFoodOfCustomer')
+  @ApiOperation({ summary: 'Retrieve all custom food items of a customer' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of custom food of a customer.',
+  })
+  @ApiResponse({ status: 500, description: 'Internal Server Error.' })
+  async findAllCustomFoodOfCustomer(
+    @GetCurrentUser()
+    user: {
+      sub: string;
+      email: string;
+      iat: string;
+      exp: string;
+    },
+  ) {
+    if (!user) throw new ForbiddenException('User ID not found');
+    return this.foodService.findAllCustomFoodOfCustomer(user.sub);
   }
 
   @Get(':id')
@@ -85,7 +107,7 @@ export class FoodController {
   @ApiResponse({ status: 404, description: 'Food item not found.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
   async findOne(@Param('id') id: string) {
-    return this.foodService.findOne(id)
+    return this.foodService.findOne(id);
   }
 
   @Patch(':id')
@@ -100,7 +122,7 @@ export class FoodController {
     @Param('id') id: string,
     @Body() updateFoodDto: Prisma.FoodUpdateInput,
   ) {
-    return this.foodService.update(id, updateFoodDto)
+    return this.foodService.update(id, updateFoodDto);
   }
 
   @Delete(':id')
@@ -112,6 +134,6 @@ export class FoodController {
   @ApiResponse({ status: 404, description: 'Food item not found.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
   async remove(@Param('id') id: string) {
-    return this.foodService.remove(id)
+    return this.foodService.remove(id);
   }
 }
