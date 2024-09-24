@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { APP_GUARD } from '@nestjs/core'
@@ -16,6 +17,27 @@ import { PrismaModule } from './prisma/prisma.module'
 import { ReviewModule } from './review/review.module'
 import { TransactionModule } from './transaction/transaction.module'
 import { AtGuard } from './common/guards'
+=======
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { PassportModule } from '@nestjs/passport';
+import { IngredientModule } from './ingredient/ingredient.module';
+import { CustomDishIngredientModule } from './custom-dish-ingredient/custom-dish-ingredient.module';
+
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { AuthModule } from './auth/auth.module';
+import { ComboItemModule } from './combo-item/combo-item.module';
+import { ComboModule } from './combo/combo.module';
+import { CustomerModule } from './customer/customer.module';
+import { FoodModule } from './food/food.module';
+import { OrderDetailModule } from './order-detail/order-detail.module';
+import { OrderModule } from './order/order.module';
+import { PrismaModule } from './prisma/prisma.module';
+import { ReviewModule } from './review/review.module';
+import { TransactionModule } from './transaction/transaction.module';
+import { AtGuard } from './common/guards';
+>>>>>>> 9de838715a099f005253540ccce1e56761922d7e
 
 @Module({
   imports: [
@@ -58,4 +80,4 @@ import { AtGuard } from './common/guards'
     },
   ],
 })
-export class AppModule { }
+export class AppModule {}

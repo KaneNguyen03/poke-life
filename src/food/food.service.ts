@@ -95,12 +95,27 @@ export class FoodService {
     }
   }
 
-  async findAll() {
+  async findAll(pageIndex: number, pageSize: number, keyword?: string) {
     try {
+      const skip = (pageIndex - 1) * pageSize;
+      const take = pageSize;
+
+      // Điều kiện tìm kiếm
+      const where: Prisma.FoodWhereInput = {
+        IsDeleted: false, // Lọc những đơn hàng không bị xóa
+        ...(keyword && {
+          OR: [
+            { FoodID: { contains: keyword, mode: 'insensitive' } },
+            { Name: { contains: keyword, mode: 'insensitive' } },
+            // Thêm các trường khác nếu cần
+          ],
+        }),
+      };
+
       const foods = await this.databaseService.food.findMany({
-        where: {
-          IsDeleted: false,
-        },
+        skip,
+        take,
+        where,
       });
       if (foods.length == 0) throw new NotFoundException('Not found any food');
       else return foods;
