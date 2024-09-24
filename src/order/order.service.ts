@@ -122,7 +122,7 @@ export class OrderService {
         }
 
         //tạo orderdetails nếu có combo
-        if (comboItemList.length != 0) {
+        if (comboItemList) {
           for (const item of comboItemList) {
             const food = await this.databaseService.food.findUnique({
               where: { FoodID: item.foodID },
