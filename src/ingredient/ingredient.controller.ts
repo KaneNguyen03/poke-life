@@ -7,11 +7,10 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { IngredientService } from './ingredient.service';
-// import { CreateIngredientDto } from './dto/create-ingredient.dto';
-// import { UpdateIngredientDto } from './dto/update-ingredient.dto';
-import { Prisma } from '@prisma/client';
+// import { Prisma } from '@prisma/client';
 import { AtStrategy } from 'src/auth/strategies';
 import {
   ApiBearerAuth,
@@ -19,6 +18,8 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { CreateIngredientDto } from './dto/create-ingredient.dto';
+import { UpdateIngredientDto } from './dto/update-ingredient.dto';
 
 @ApiTags('ingredient')
 @ApiBearerAuth()
@@ -35,7 +36,7 @@ export class IngredientController {
   })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
-  async create(@Body() createIngredientDto: Prisma.IngredientsCreateInput) {
+  async create(@Body() createIngredientDto: CreateIngredientDto) {
     return this.ingredientService.create(createIngredientDto);
   }
 
@@ -43,8 +44,12 @@ export class IngredientController {
   @ApiOperation({ summary: 'Retrieve all ingredients' })
   @ApiResponse({ status: 200, description: 'List of ingredients.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
-  async findAll() {
-    return this.ingredientService.findAll();
+  async findAll(
+    @Query('pageIndex') pageIndex: number = 1, // Mặc định là trang 1
+    @Query('pageSize') pageSize: number = 10, // Mặc định là 10 mục trên mỗi trang
+    @Query('keyword') keyword?: string, // Từ khóa tìm kiếm tùy chọn
+  ) {
+    return this.ingredientService.findAll(pageIndex, pageSize, keyword);
   }
 
   @Get(':id')
@@ -66,7 +71,7 @@ export class IngredientController {
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
   async update(
     @Param('id') id: string,
-    @Body() updateIngredientDto: Prisma.IngredientsUpdateInput,
+    @Body() updateIngredientDto: UpdateIngredientDto,
   ) {
     return this.ingredientService.update(id, updateIngredientDto);
   }

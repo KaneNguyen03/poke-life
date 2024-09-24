@@ -96,7 +96,7 @@ export class OrderController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Update a order' })
+  @ApiOperation({ summary: 'Update a status order' })
   @ApiResponse({
     status: 200,
     description: 'The order information has been successfully updated.',

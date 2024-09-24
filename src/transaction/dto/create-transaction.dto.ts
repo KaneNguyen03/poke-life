@@ -16,6 +16,7 @@ export class CreateTransactionDto {
   @IsEnum(PaymentMethod)
   paymentMethod?: PaymentMethod;
 
+  //cái này cũng xóa đi này
   @ApiProperty({ description: 'Amount of the transaction' })
   @IsNotEmpty()
   @IsDecimal({ decimal_digits: '2', force_decimal: true })
