@@ -1,13 +1,13 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger'
 import {
   IsNotEmpty,
   IsEnum,
   IsOptional,
   IsString,
   IsPhoneNumber,
-} from 'class-validator';
-import { OrderStatus } from '@prisma/client';
-import { PaymentMethod } from '@prisma/client';
+} from 'class-validator'
+import { OrderStatus } from '@prisma/client'
+import { PaymentMethod } from '@prisma/client'
 
 export class UpdateOrderDto {
   @ApiProperty({
@@ -16,7 +16,7 @@ export class UpdateOrderDto {
   })
   @IsNotEmpty()
   @IsEnum(OrderStatus)
-  orderStatus!: OrderStatus;
+  orderStatus!: OrderStatus
 
   @ApiProperty({
     description: 'Name of the customer',
@@ -24,15 +24,17 @@ export class UpdateOrderDto {
   })
   @IsOptional()
   @IsString()
-  customerName!: string;
+  customerName!: string
 
   @ApiProperty({
     description: 'Phone number of the customer',
     required: false,
   })
   @IsOptional()
-  @IsPhoneNumber()
-  phoneNumber!: string;
+  @IsPhoneNumber('VN', {
+    message: 'Phone number must be a valid Vietnamese phone number',
+  })
+  phoneNumber!: string
 
   @ApiProperty({
     description: 'Received location',
@@ -40,7 +42,7 @@ export class UpdateOrderDto {
   })
   @IsOptional()
   @IsString()
-  address!: string;
+  address!: string
 
   @ApiProperty({
     description: 'PaymentMethod of the transaction',
@@ -49,5 +51,5 @@ export class UpdateOrderDto {
   })
   @IsOptional()
   @IsEnum(PaymentMethod)
-  paymentMethod?: PaymentMethod;
+  paymentMethod?: PaymentMethod
 }

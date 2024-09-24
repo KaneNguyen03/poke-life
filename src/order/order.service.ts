@@ -234,6 +234,13 @@ export class OrderService {
         skip,
         take,
         where,
+        include: {
+          Transactions: { // Include the related Transaction
+            select: {
+              PaymentMethod: true, // Select only the PaymentMethod
+            },
+          },
+        },
       })
 
       // If no orders are found, throw an exception
@@ -244,9 +251,19 @@ export class OrderService {
       // Calculate total pages
       const totalPages = Math.ceil(totalOrders / pageSize)
 
+
+      // Transform the orders to include paymentMethod instead of Transactions
+      const transformedOrders = orders.map(order => {
+        const paymentMethod = order.Transactions.length > 0 ? order.Transactions[0].PaymentMethod : null // Get the first payment method
+        return {
+          ...order,
+          paymentMethod, // Replace Transactions with paymentMethod
+          Transactions: undefined, // Optionally remove the Transactions array
+        }
+      })
       // Return orders with pagination info
       return {
-        orders,
+        orders: transformedOrders,
         pagination: {
           pageIndex,
           pageSize,

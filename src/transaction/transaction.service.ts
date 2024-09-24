@@ -196,18 +196,21 @@ export class TransactionService {
       const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate()
       const dailyData: DailyData[] = Array(daysInMonth).fill(0).map((_, i) => ({ day: i + 1, users: 0, orders: 0, revenue: 0 }))
 
-      data.forEach(({ CreatedAt, _count }) => {
-        const day = new Date(CreatedAt).getDate()
+      data.forEach((item) => {
+        const day = new Date(item.CreatedAt).getDate() // Ensure you're accessing CreatedAt correctly
         if (key === 'users') {
-          dailyData[day - 1].users += _count.CreatedAt
+          dailyData[day - 1].users += item._count?.CreatedAt || 0 // Use _count for user data
         } else if (key === 'orders') {
-          dailyData[day - 1].orders += _count.CreatedAt
+          dailyData[day - 1].orders += item._count?.CreatedAt || 0 // Use _count for order data
         } else if (key === 'revenue') {
-          dailyData[day - 1].revenue += _count.TotalPrice || 0 // Increment the revenue count
+          dailyData[day - 1].revenue += item._sum?.TotalPrice || 0 // Use _sum for revenue data
         }
       })
+
       return dailyData
     }
+
+
 
     const userMonthlyData = formatMonthlyData(usersByMonth, 'users')
     const orderMonthlyData = formatMonthlyData(ordersByMonth, 'orders')
