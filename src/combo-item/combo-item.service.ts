@@ -1,32 +1,36 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client'
+import { Prisma } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
 
 @Injectable()
 export class ComboItemService {
-  constructor(private readonly databaseService: DatabaseService) { }
-  create(createComboItemDto: Prisma.ComboItemsCreateInput) {
-    return this.databaseService.comboItems.create({ data: createComboItemDto })
-
+  constructor(private readonly databaseService: DatabaseService) {}
+  async create(createComboItemDto: Prisma.ComboItemsCreateInput) {
+    return await this.databaseService.comboItems.create({
+      data: createComboItemDto,
+    });
   }
 
-  findAll() {
-    return this.databaseService.comboItems.findMany()
-
+  async findAll() {
+    return await this.databaseService.comboItems.findMany();
   }
 
-  findOne(id: string) {
-    return this.databaseService.comboItems.findUnique({ where: { ComboItemID: id } })
-
+  async findOne(id: string) {
+    return await this.databaseService.comboItems.findUnique({
+      where: { ComboItemID: id },
+    });
   }
 
-  update(id: string, updateComboItemDto: Prisma.ComboItemsUpdateInput) {
-    return this.databaseService.comboItems.update({ where: { ComboItemID: id }, data: updateComboItemDto })
-
+  async update(id: string, updateComboItemDto: Prisma.ComboItemsUpdateInput) {
+    return await this.databaseService.comboItems.update({
+      where: { ComboItemID: id },
+      data: updateComboItemDto,
+    });
   }
 
-  remove(id: string) {
-    return this.databaseService.comboItems.delete({ where: { ComboItemID: id } })
-
+  async remove(id: string) {
+    return await this.databaseService.comboItems.delete({
+      where: { ComboItemID: id },
+    });
   }
 }

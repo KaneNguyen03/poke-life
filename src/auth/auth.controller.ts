@@ -6,22 +6,17 @@ import {
     HttpStatus,
     Post,
     Request,
-    Res,
     Response,
     UseGuards,
 } from '@nestjs/common'
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { GetCurrentUserId, Public } from '../common/decorators'
-import { AtGuard, RtGuard } from '../common/guards'
-import { GetCurrentUser } from './../common/decorators/get-current-user.decorator'
 import { AuthService } from './auth.service'
+import { AtGuard, RtGuard } from '../common/guards'
+import { Public, GetCurrentUserId, GetCurrentUser } from '../common/decorators'
 import { SigninDto, SignupDto } from './dto'
-import { GoogleOAuthGuard } from './google-oauth.guard'
 import { Tokens } from './types'
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { TokensResponse } from './types/tokensResponse.type'
-import { Users } from '@prisma/client'
-import { JwtAuthGuard } from './jwt-auth.guard'
-
+import { GoogleOAuthGuard } from './google-oauth.guard'
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -45,11 +40,18 @@ export class AuthController {
 
     @Public()
     @Post('local/signup')
-    @UseGuards(AtGuard)
+    //@UseGuards(AtGuard)
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Sign up' })
-    @ApiResponse({ status: HttpStatus.CREATED, description: 'User successfully signed up', type: TokensResponse })
-    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Credentials incorrect' })
+    @ApiResponse({
+        status: HttpStatus.CREATED,
+        description: 'User successfully signed up',
+        type: TokensResponse,
+    })
+    @ApiResponse({
+        status: HttpStatus.FORBIDDEN,
+        description: 'Credentials incorrect',
+    })
     signupLocal(@Body() dto: SignupDto): Promise<Tokens> {
         return this.authService.signupLocal(dto)
     }
@@ -58,7 +60,11 @@ export class AuthController {
     @Post('local/signin')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Sign in' })
-    @ApiResponse({ status: HttpStatus.OK, description: 'User successfully signed in', type: TokensResponse })
+    @ApiResponse({
+        status: HttpStatus.OK,
+        description: 'User successfully signed in',
+        type: TokensResponse,
+    })
     @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
     signinLocal(@Body() dto: SigninDto): Promise<Tokens> {
         return this.authService.signinLocal(dto)
@@ -67,7 +73,10 @@ export class AuthController {
     @Post('logout')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Log out' })
-    @ApiResponse({ status: HttpStatus.OK, description: 'User successfully logged out' })
+    @ApiResponse({
+        status: HttpStatus.OK,
+        description: 'User successfully logged out',
+    })
     logout(@GetCurrentUserId() userId: string): Promise<boolean> {
         return this.authService.logout(userId)
     }
@@ -77,7 +86,11 @@ export class AuthController {
     @Post('refresh')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Refresh tokens' })
-    @ApiResponse({ status: HttpStatus.OK, description: 'Tokens successfully refreshed', type: TokensResponse })
+    @ApiResponse({
+        status: HttpStatus.OK,
+        description: 'Tokens successfully refreshed',
+        type: TokensResponse,
+    })
     @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
     refreshTokens(
         @GetCurrentUserId() userId: string,
@@ -86,11 +99,17 @@ export class AuthController {
         return this.authService.refreshTokens(userId, refreshToken)
     }
 
-    @Public()
+    @UseGuards(AtGuard)
     @Get('local/getCurrentUser')
-    @UseGuards(JwtAuthGuard)
-    @ApiOperation({ summary: 'Get current user login' })
-    GetCurrentUser(@GetCurrentUser() user): Users {
-        return user
+    getMe(
+        @GetCurrentUser()
+        user: {
+            sub: string
+            email: string
+            iat: string
+            exp: string
+        },
+    ) {
+        return this.authService.getUserById(user.sub)
     }
 }

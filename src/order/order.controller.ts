@@ -1,9 +1,28 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  ForbiddenException,
+  Query,
+} from '@nestjs/common';
 import { OrderService } from './order.service';
 
-import { Prisma } from '@prisma/client'
-import { AtStrategy } from 'src/auth/strategies'
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+// import { Prisma } from '@prisma/client';
+import { AtStrategy } from 'src/auth/strategies';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { CreateOrderDto } from './dto/create-order.dto';
+import { UpdateOrderDto } from './dto/update-order.dto';
+import { GetCurrentUser } from 'src/common/decorators';
 
 @ApiTags('order')
 @ApiBearerAuth()
@@ -14,19 +33,57 @@ export class OrderController {
 
   @Post()
   @ApiOperation({ summary: 'Create a new order' })
-  @ApiResponse({ status: 201, description: 'The order has been successfully created.' })
+  @ApiResponse({
+    status: 201,
+    description: 'The order has been successfully created.',
+  })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
-  create(@Body() createOrderDto: Prisma.OrdersCreateInput) {
-    return this.orderService.create(createOrderDto);
+  async create(
+    @Body() createOrderDto: CreateOrderDto,
+    @GetCurrentUser()
+    user: { sub: string; email: string; iat: string; exp: string },
+  ) {
+    if (!user) throw new ForbiddenException('User ID not found');
+    return this.orderService.create(createOrderDto, user.sub);
   }
 
   @Get()
   @ApiOperation({ summary: 'Retrieve all orders' })
   @ApiResponse({ status: 200, description: 'List of orders.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
-  findAll() {
-    return this.orderService.findAll();
+  async findAll(
+    @Query('pageIndex') pageIndex: number = 1, // Mặc định là trang 1
+    @Query('pageSize') pageSize: number = 10, // Mặc định là 10 mục trên mỗi trang
+    @Query('keyword') keyword?: string, // Từ khóa tìm kiếm tùy chọn
+  ) {
+    return await this.orderService.findAll(pageIndex, pageSize, keyword);
+  }
+
+  @Get('customerID')
+  @ApiOperation({ summary: 'Retrieve all orders by customer ID' })
+  @ApiResponse({ status: 200, description: 'List all orders of customer.' })
+  @ApiResponse({ status: 404, description: 'Orders not found.' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error.' })
+  async findAllByCustomerID(
+    @GetCurrentUser()
+    user: {
+      sub: string;
+      email: string;
+      iat: string;
+      exp: string;
+    },
+    @Query('pageIndex') pageIndex: number = 1, // Mặc định là trang 1
+    @Query('pageSize') pageSize: number = 10, // Mặc định là 10 mục trên mỗi trang
+    @Query('keyword') keyword?: string, // Từ khóa tìm kiếm tùy chọn
+  ) {
+    if (!user) throw new ForbiddenException('User ID not found');
+    return this.orderService.findAllByCustomerID(
+      user.sub,
+      pageIndex,
+      pageSize,
+      keyword,
+    );
   }
 
   @Get(':id')
@@ -34,25 +91,36 @@ export class OrderController {
   @ApiResponse({ status: 200, description: 'The orders information.' })
   @ApiResponse({ status: 404, description: 'Orders not found.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string) {
     return this.orderService.findOne(id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update a order' })
-  @ApiResponse({ status: 200, description: 'The order information has been successfully updated.' })
+  @ApiResponse({
+    status: 200,
+    description: 'The order information has been successfully updated.',
+  })
   @ApiResponse({ status: 404, description: 'Order not found.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
-  update(@Param('id') id: string, @Body() updateOrderDto: Prisma.OrdersUpdateInput) {
+  async update(
+    @Param('id') id: string,
+    @Body() updateOrderDto: UpdateOrderDto,
+  ) {
     return this.orderService.update(id, updateOrderDto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a order' })
-  @ApiResponse({ status: 200, description: 'The order has been successfully deleted.' })
+  @ApiResponse({
+    status: 200,
+    description: 'The order has been successfully deleted.',
+  })
   @ApiResponse({ status: 404, description: 'Order item not found.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string) {
     return this.orderService.remove(id);
   }
+
+  //TODO: Thiếu API get Order by customerID
 }

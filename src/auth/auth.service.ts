@@ -29,6 +29,8 @@ export class AuthService {
                     Username: dto.username,
                     Password: hash,
                     PhoneNumber: dto.phoneNumber,
+                    Address: dto.address,
+                    Role: "Customer"
                 },
             })
             .catch((error) => {
@@ -39,6 +41,16 @@ export class AuthService {
                 }
                 throw error
             })
+
+        await this.prisma.customers.create({
+            data: {
+                CustomerID: user.UserID,
+                Address: dto.address,
+                PhoneNumber: dto.phoneNumber,
+                FullName: dto.username,
+                Email: user.Email,
+            },
+        })
 
         const tokens = await this.getTokens(user.UserID, user.Email)
         await this.updateRtHash(user.UserID, tokens.refresh_token)
@@ -161,6 +173,22 @@ export class AuthService {
                 UserID: id,
             },
         })
+    }
+
+    async getUserById(id: string): Promise<Omit<Users, 'password' | 'hashRt'> | null> {
+        const user = await this.prisma.users.findUnique({
+            where: {
+                UserID: id,
+            },
+        })
+
+        if (!user) {
+            return null // User not found
+        }
+
+        // Return a new object excluding sensitive fields
+        const { Password, HashedRt, ...safeUser } = user
+        return safeUser as Omit<Users, 'password' | 'hashRt'>
     }
 }
 
