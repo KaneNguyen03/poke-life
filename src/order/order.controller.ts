@@ -58,11 +58,18 @@ export class OrderController {
   @ApiQuery({ name: 'pageSize', required: false, type: Number, description: 'Number of items per page, default is 10' })
   @ApiQuery({ name: 'keyword', required: false, type: String, description: 'Optional search keyword' })
   async findAll(
-    @Query('pageIndex') pageIndex: number = 1, // Mặc định là trang 1
-    @Query('pageSize') pageSize: number = 10, // Mặc định là 10 mục trên mỗi trang
-    @Query('keyword') keyword: string = '', // Từ khóa tìm kiếm tùy chọn
+    @Query('pageIndex') pageIndex?: string, // Optional parameter as string
+    @Query('pageSize') pageSize?: string, // Optional parameter as string
+    @Query('keyword') keyword?: string, // Optional parameter
   ) {
-    const orders = await this.orderService.findAll(pageIndex, pageSize, keyword)
+    const parsedPageIndex = parseInt(pageIndex || '', 10)
+    const parsedPageSize = parseInt(pageSize || '', 10)
+
+    // Set default values if parsing results in NaN
+    const finalPageIndex = isNaN(parsedPageIndex) ? 1 : parsedPageIndex
+    const finalPageSize = isNaN(parsedPageSize) ? 10 : parsedPageSize
+    const finalKeyword = keyword ?? ''
+    const orders = await this.orderService.findAll(finalPageIndex, finalPageSize, finalKeyword)
     return orders // Trả về mảng các đơn hàng
   }
 
@@ -71,6 +78,9 @@ export class OrderController {
   @ApiResponse({ status: 200, description: 'List all orders of customer.' })
   @ApiResponse({ status: 404, description: 'Orders not found.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
+  @ApiQuery({ name: 'pageIndex', required: false, type: Number, description: 'Page index, default is 1' })
+  @ApiQuery({ name: 'pageSize', required: false, type: Number, description: 'Number of items per page, default is 10' })
+  @ApiQuery({ name: 'keyword', required: false, type: String, description: 'Optional search keyword' })
   async findAllByCustomerID(
     @GetCurrentUser()
     user: {
@@ -79,16 +89,23 @@ export class OrderController {
       iat: string
       exp: string
     },
-    @Query('pageIndex') pageIndex: number = 1, // Mặc định là trang 1
-    @Query('pageSize') pageSize: number = 10, // Mặc định là 10 mục trên mỗi trang
-    @Query('keyword') keyword?: string, // Từ khóa tìm kiếm tùy chọn
+    @Query('pageIndex') pageIndex?: string, // Optional parameter as string
+    @Query('pageSize') pageSize?: string, // Optional parameter as string
+    @Query('keyword') keyword?: string, // Optional parameter
   ) {
+    const parsedPageIndex = parseInt(pageIndex || '', 10)
+    const parsedPageSize = parseInt(pageSize || '', 10)
+
+    // Set default values if parsing results in NaN
+    const finalPageIndex = isNaN(parsedPageIndex) ? 1 : parsedPageIndex
+    const finalPageSize = isNaN(parsedPageSize) ? 10 : parsedPageSize
+    const finalKeyword = keyword ?? ''
     if (!user) throw new ForbiddenException('User ID not found')
     return this.orderService.findAllByCustomerID(
       user.sub,
-      pageIndex,
-      pageSize,
-      keyword,
+      finalPageIndex,
+      finalPageSize,
+      finalKeyword,
     )
   }
 
@@ -102,7 +119,7 @@ export class OrderController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Update a order' })
+  @ApiOperation({ summary: 'Update a status order' })
   @ApiResponse({
     status: 200,
     description: 'The order information has been successfully updated.',

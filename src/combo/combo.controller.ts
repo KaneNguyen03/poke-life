@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { ComboService } from './combo.service';
 
-import { Prisma } from '@prisma/client';
+// import { Prisma } from '@prisma/client';
 import { AtStrategy } from 'src/auth/strategies';
 import {
   ApiBearerAuth,
@@ -18,6 +18,8 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { CreateComboDto } from './dto/create-combo.dto';
+import { UpdateComboDto } from './dto/update-combo.dto';
 
 @ApiTags('combo')
 @ApiBearerAuth()
@@ -34,7 +36,7 @@ export class ComboController {
   })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
-  async create(@Body() createComboDto: Prisma.CombosCreateInput) {
+  async create(@Body() createComboDto: CreateComboDto) {
     return this.comboService.create(createComboDto);
   }
 
@@ -65,7 +67,7 @@ export class ComboController {
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
   async update(
     @Param('id') id: string,
-    @Body() updateComboDto: Prisma.CombosUpdateInput,
+    @Body() updateComboDto: UpdateComboDto,
   ) {
     return this.comboService.update(id, updateComboDto);
   }

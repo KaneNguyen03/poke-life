@@ -1,16 +1,18 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ForbiddenException, Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import * as argon from 'argon2'
 import { PrismaService } from '../prisma/prisma.service'
 
+import { Users } from '@prisma/client'
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 import { SigninDto, SignupDto } from './dto'
 import { JwtPayload, Tokens } from './types'
-import { Users } from '@prisma/client'
 
 @Injectable()
 export class AuthService {
+
     constructor(
         private prisma: PrismaService,
         private jwtService: JwtService,
@@ -142,8 +144,8 @@ export class AuthService {
     }
 
     async googleLogin(user: { googleId: string, email: string, name: string }): Promise<Tokens> {
-        const existingUser = await this.prisma.users.findFirst({
-            where: { Email: user.email }, // Ensure field name matches Prisma schema
+        const existingUser = await this.prisma.users.findUnique({
+            where: { Email: user.email },
         })
         if (!existingUser) {
             const newUser = await this.prisma.users.create({
