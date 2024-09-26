@@ -42,15 +42,16 @@ export class AuthService {
         throw error;
       });
 
-    await this.prisma.customers.create({
-      data: {
-        CustomerID: user.UserID,
-        Address: dto.address,
-        PhoneNumber: dto.phoneNumber,
-        FullName: dto.username,
-        Email: user.Email,
-      },
-    });
+    const [at, rt] = await Promise.all([
+      this.jwtService.signAsync(jwtPayload, {
+        secret: this.config.get<string>('AT_SECRET'),
+        expiresIn: '10s',
+      }),
+      this.jwtService.signAsync(jwtPayload, {
+        secret: this.config.get<string>('RT_SECRET'),
+        expiresIn: '7d',
+      }),
+    ]);
 
     const tokens = await this.getTokens(
       user.UserID,

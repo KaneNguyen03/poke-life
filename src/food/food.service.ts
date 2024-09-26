@@ -2,8 +2,8 @@ import { DatabaseService } from 'src/database/database.service';
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { Prisma } from '@prisma/client';
-import { CreateFoodDto, CreateCustomFoodDto } from './dto/create-food.dto';
 import { Decimal } from '@prisma/client/runtime/library';
+import { CreateCustomFoodDto, CreateFoodDto } from './dto/create-food.dto';
 
 @Injectable()
 export class FoodService {
@@ -187,7 +187,7 @@ export class FoodService {
   async findAllCustomFoodOfCustomer(currentUserId: string) {
     try {
       // Khởi tạo mảng kết quả
-      const result: any[] = [];
+      const result: unknown[] = [];
 
       // Tìm các đơn hàng của khách hàng
       const orderListOfCustomer = await this.databaseService.orders.findMany({
