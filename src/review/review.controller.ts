@@ -18,6 +18,9 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { RolesGuard } from 'src/common/guards/roles.guard'; // Đảm bảo đường dẫn đúng
+import { Roles } from 'src/common/decorators/roles.decorator'; // Đảm bảo đường dẫn đúng
+import { UserRole } from 'src/auth/types/user-role.enum';
 
 @ApiTags('review')
 @ApiBearerAuth()
@@ -27,6 +30,8 @@ export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
 
   @Post()
+  @Roles(UserRole.Customer) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Create a new review' })
   @ApiResponse({
     status: 201,
@@ -39,6 +44,8 @@ export class ReviewController {
   }
 
   @Get()
+  @Roles(UserRole.Customer) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Retrieve all reviews' })
   @ApiResponse({ status: 200, description: 'List of reviews.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
@@ -47,6 +54,8 @@ export class ReviewController {
   }
 
   @Get(':id')
+  @Roles(UserRole.Customer) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Retrieve a review by ID' })
   @ApiResponse({ status: 200, description: 'The review information.' })
   @ApiResponse({ status: 404, description: 'Review not found.' })
@@ -56,6 +65,8 @@ export class ReviewController {
   }
 
   @Patch(':id')
+  @Roles(UserRole.Customer) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Update a review information' })
   @ApiResponse({
     status: 200,
@@ -71,6 +82,8 @@ export class ReviewController {
   }
 
   @Delete(':id')
+  @Roles(UserRole.Admin) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Delete a review' })
   @ApiResponse({
     status: 200,

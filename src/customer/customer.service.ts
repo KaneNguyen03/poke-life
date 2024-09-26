@@ -31,8 +31,11 @@ export class CustomerService {
   }
 
   async remove(id: string) {
-    return await this.databaseService.customers.delete({
+    return await this.databaseService.customers.update({
       where: { CustomerID: id },
+      data: {
+        IsDeleted: true,
+      },
     });
   }
 }

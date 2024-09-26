@@ -20,6 +20,9 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { RolesGuard } from 'src/common/guards/roles.guard'; // Đảm bảo đường dẫn đúng
+import { Roles } from 'src/common/decorators/roles.decorator'; // Đảm bảo đường dẫn đúng
+import { UserRole } from 'src/auth/types/user-role.enum';
 
 @ApiTags('custom-dish-ingredient')
 @ApiBearerAuth()
@@ -31,6 +34,8 @@ export class CustomDishIngredientController {
   ) {}
 
   @Post()
+  @Roles(UserRole.Customer) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Create a new custom dish ingredient' })
   @ApiResponse({
     status: 201,
@@ -48,6 +53,8 @@ export class CustomDishIngredientController {
   }
 
   @Get()
+  @Roles(UserRole.Customer) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Retrieve all custom dish ingredients' })
   @ApiResponse({ status: 200, description: 'List of custom dish ingredients.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
@@ -56,6 +63,8 @@ export class CustomDishIngredientController {
   }
 
   @Get(':id')
+  @Roles(UserRole.Customer) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Retrieve a custom dish ingredient by ID' })
   @ApiResponse({
     status: 200,
@@ -71,6 +80,8 @@ export class CustomDishIngredientController {
   }
 
   @Patch(':id')
+  @Roles(UserRole.Admin) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Update a custom dish ingredient' })
   @ApiResponse({
     status: 200,
@@ -94,6 +105,8 @@ export class CustomDishIngredientController {
   }
 
   @Delete(':id')
+  @Roles(UserRole.Admin) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Delete a custom dish ingredient' })
   @ApiResponse({
     status: 200,

@@ -29,8 +29,11 @@ export class ComboItemService {
   }
 
   async remove(id: string) {
-    return await this.databaseService.comboItems.delete({
+    return await this.databaseService.comboItems.update({
       where: { ComboItemID: id },
+      data: {
+        IsDeleted: true,
+      },
     });
   }
 }

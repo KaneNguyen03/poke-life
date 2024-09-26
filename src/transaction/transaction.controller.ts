@@ -23,6 +23,9 @@ import {
 } from '@nestjs/swagger';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
+import { RolesGuard } from 'src/common/guards/roles.guard'; // Đảm bảo đường dẫn đúng
+import { Roles } from 'src/common/decorators/roles.decorator'; // Đảm bảo đường dẫn đúng
+import { UserRole } from 'src/auth/types/user-role.enum';
 
 @ApiTags('transaction')
 @ApiBearerAuth()
@@ -32,6 +35,8 @@ export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}
 
   @Post()
+  @Roles(UserRole.Customer) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Create a new transaction' })
   @ApiResponse({
     status: 201,
@@ -45,6 +50,8 @@ export class TransactionController {
   }
 
   @Get('/statistics')
+  @Roles(UserRole.Admin) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Get statistics of admin dashboard' })
   @ApiResponse({ status: 200, description: 'Statistics of admin dashboard.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
@@ -53,18 +60,33 @@ export class TransactionController {
   }
 
   @Get()
+  @Roles(UserRole.Customer) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Retrieve all transactions' })
   @ApiResponse({ status: 200, description: 'List of transactions.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
   async findAll(
-    @Query('pageIndex') pageIndex: number = 1, // Mặc định là trang 1
-    @Query('pageSize') pageSize: number = 10, // Mặc định là 10 mục trên mỗi trang
-    @Query('keyword') keyword?: string, // Từ khóa tìm kiếm tùy chọn
+    @Query('pageIndex') pageIndex?: string, // Optional parameter as string
+    @Query('pageSize') pageSize?: string, // Optional parameter as string
+    @Query('keyword') keyword?: string, // Optional parameter
   ) {
-    return this.transactionService.findAll(pageIndex, pageSize, keyword);
+    const parsedPageIndex = parseInt(pageIndex || '', 10);
+    const parsedPageSize = parseInt(pageSize || '', 10);
+
+    // Set default values if parsing results in NaN
+    const finalPageIndex = isNaN(parsedPageIndex) ? 1 : parsedPageIndex;
+    const finalPageSize = isNaN(parsedPageSize) ? 10 : parsedPageSize;
+    const finalKeyword = keyword ?? '';
+    return this.transactionService.findAll(
+      finalPageIndex,
+      finalPageSize,
+      finalKeyword,
+    );
   }
 
   @Get(':id')
+  @Roles(UserRole.Customer) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Retrieve a transaction by ID' })
   @ApiResponse({ status: 200, description: 'The transaction information.' })
   @ApiResponse({ status: 404, description: 'Transaction not found.' })
@@ -74,6 +96,8 @@ export class TransactionController {
   }
 
   @Patch(':id')
+  @Roles(UserRole.Admin) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Update a transaction information' })
   @ApiResponse({
     status: 200,
@@ -90,6 +114,8 @@ export class TransactionController {
   }
 
   @Delete(':id')
+  @Roles(UserRole.Admin) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Delete a transaction' })
   @ApiResponse({
     status: 200,
