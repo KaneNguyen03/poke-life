@@ -20,7 +20,7 @@ import {
 } from '@nestjs/swagger';
 import { Prisma } from '@prisma/client';
 import { AtStrategy } from 'src/auth/strategies';
-import { GetCurrentUser } from 'src/common/decorators';
+import { GetCurrentUser, Public } from 'src/common/decorators';
 import { CreateFoodDto, CreateCustomFoodDto } from './dto/create-food.dto';
 
 import { RolesGuard } from 'src/common/guards/roles.guard'; // Đảm bảo đường dẫn đúng
@@ -62,9 +62,9 @@ export class FoodController {
     return this.foodService.createCustomDish(createFoodDto);
   }
 
-  // @Public()
+  @Public()
   @Get()
-  @Roles(UserRole.Admin) // Chỉ admin có quyền truy cập
+  // @Roles(UserRole.Admin) // Chỉ admin có quyền truy cập
   @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Retrieve all food items' })
   @ApiResponse({ status: 200, description: 'List of food items.' })
@@ -129,15 +129,10 @@ export class FoodController {
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
   async findAllCustomFoodOfCustomer(
     @GetCurrentUser()
-    user: {
-      sub: string;
-      email: string;
-      iat: string;
-      exp: string;
-    },
+    user: { userId: string; role: string },
   ) {
     if (!user) throw new ForbiddenException('User ID not found');
-    return this.foodService.findAllCustomFoodOfCustomer(user.sub);
+    return this.foodService.findAllCustomFoodOfCustomer(user.userId);
   }
 
   @Get(':id')

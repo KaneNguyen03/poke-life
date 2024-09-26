@@ -103,13 +103,11 @@ export class AuthController {
     getMe(
         @GetCurrentUser()
         user: {
-            sub: string
-            email: string
-            iat: string
-            exp: string
+            userId: string
+            role: string
         },
     ) {
-        return this.authService.getUserById(user.sub)
+        return this.authService.getUserById(user.userId)
     }
 
 

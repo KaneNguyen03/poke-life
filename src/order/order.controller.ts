@@ -49,10 +49,10 @@ export class OrderController {
   async create(
     @Body() createOrderDto: CreateOrderDto,
     @GetCurrentUser()
-    user: { sub: string; email: string; iat: string; exp: string },
+    user: { userId: string; role: string },
   ) {
     if (!user) throw new ForbiddenException('User ID not found');
-    return this.orderService.create(createOrderDto, user.sub);
+    return this.orderService.create(createOrderDto, user.userId);
   }
 
   @Get()
@@ -126,12 +126,7 @@ export class OrderController {
   })
   async findAllByCustomerID(
     @GetCurrentUser()
-    user: {
-      sub: string;
-      email: string;
-      iat: string;
-      exp: string;
-    },
+    user: { userId: string; role: string },
     @Query('pageIndex') pageIndex?: string, // Optional parameter as string
     @Query('pageSize') pageSize?: string, // Optional parameter as string
     @Query('keyword') keyword?: string, // Optional parameter
@@ -145,7 +140,7 @@ export class OrderController {
     const finalKeyword = keyword ?? '';
     if (!user) throw new ForbiddenException('User ID not found');
     return this.orderService.findAllByCustomerID(
-      user.sub,
+      user.userId,
       finalPageIndex,
       finalPageSize,
       finalKeyword,
