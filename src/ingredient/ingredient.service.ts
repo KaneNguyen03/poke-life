@@ -35,9 +35,9 @@ export class IngredientService {
       const skip = (pageIndex - 1) * pageSize;
       const take = pageSize;
 
-      // Điều kiện tìm kiếm
+      // Điều kiện tìm kiếm cơ bản
       const where: Prisma.IngredientsWhereInput = {
-        IsDeleted: false, // Lọc những đơn hàng không bị xóa
+        IsDeleted: false, // Lọc những món ăn không bị xóa
         ...(keyword && {
           OR: [
             { IngredientID: { contains: keyword, mode: 'insensitive' } },
@@ -51,7 +51,6 @@ export class IngredientService {
         take,
         where,
       });
-
       if (list.length == 0)
         throw new NotFoundException('Not found any ingredients');
       return list;
