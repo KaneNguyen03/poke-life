@@ -40,7 +40,6 @@ export class AuthController {
 
     @Public()
     @Post('local/signup')
-    //@UseGuards(AtGuard)
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Sign up' })
     @ApiResponse({
@@ -82,7 +81,7 @@ export class AuthController {
     }
 
     @Public()
-    @UseGuards(RtGuard)
+    // @UseGuards(RtGuard)
     @Post('refresh')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Refresh tokens' })
@@ -93,8 +92,8 @@ export class AuthController {
     })
     @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
     refreshTokens(
-        @GetCurrentUserId() userId: string,
-        @GetCurrentUser('refreshToken') refreshToken: string,
+        @Body('userId') userId: string,
+        @Body('refreshToken') refreshToken: string,
     ): Promise<Tokens> {
         return this.authService.refreshTokens(userId, refreshToken)
     }
