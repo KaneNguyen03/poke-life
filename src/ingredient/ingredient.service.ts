@@ -30,7 +30,7 @@ export class IngredientService {
     }
   }
 
-  async findAll(pageIndex: number, pageSize: number, keyword?: string) {
+  async findAll(pageIndex: number, pageSize: number, keyword: string = '') {
     try {
       const skip = (pageIndex - 1) * pageSize;
       const take = pageSize;

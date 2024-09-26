@@ -20,6 +20,9 @@ import {
 } from '@nestjs/swagger';
 import { CreateComboDto } from './dto/create-combo.dto';
 import { UpdateComboDto } from './dto/update-combo.dto';
+import { RolesGuard } from 'src/common/guards/roles.guard'; // Đảm bảo đường dẫn đúng
+import { Roles } from 'src/common/decorators/roles.decorator'; // Đảm bảo đường dẫn đúng
+import { UserRole } from 'src/auth/types/user-role.enum';
 
 @ApiTags('combo')
 @ApiBearerAuth()
@@ -29,6 +32,8 @@ export class ComboController {
   constructor(private readonly comboService: ComboService) {}
 
   @Post()
+  @Roles(UserRole.Admin) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Create a new combo' })
   @ApiResponse({
     status: 201,
@@ -41,6 +46,8 @@ export class ComboController {
   }
 
   @Get()
+  @Roles(UserRole.Customer) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Retrieve all combos' })
   @ApiResponse({ status: 200, description: 'List of combos.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
@@ -49,6 +56,8 @@ export class ComboController {
   }
 
   @Get(':id')
+  @Roles(UserRole.Customer) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Retrieve a combo by ID' })
   @ApiResponse({ status: 200, description: 'The combo information.' })
   @ApiResponse({ status: 404, description: 'Combo not found.' })
@@ -58,6 +67,8 @@ export class ComboController {
   }
 
   @Patch(':id')
+  @Roles(UserRole.Admin) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Update a combo information' })
   @ApiResponse({
     status: 200,
@@ -73,6 +84,8 @@ export class ComboController {
   }
 
   @Delete(':id')
+  @Roles(UserRole.Admin) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Delete a combo' })
   @ApiResponse({
     status: 200,

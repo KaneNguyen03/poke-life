@@ -20,6 +20,9 @@ import {
 } from '@nestjs/swagger';
 import { CreateIngredientDto } from './dto/create-ingredient.dto';
 import { UpdateIngredientDto } from './dto/update-ingredient.dto';
+import { RolesGuard } from 'src/common/guards/roles.guard'; // Đảm bảo đường dẫn đúng
+import { Roles } from 'src/common/decorators/roles.decorator'; // Đảm bảo đường dẫn đúng
+import { UserRole } from 'src/auth/types/user-role.enum';
 
 @ApiTags('ingredient')
 @ApiBearerAuth()
@@ -29,6 +32,8 @@ export class IngredientController {
   constructor(private readonly ingredientService: IngredientService) {}
 
   @Post()
+  @Roles(UserRole.Admin) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Create a new ingredient' })
   @ApiResponse({
     status: 201,
@@ -41,18 +46,33 @@ export class IngredientController {
   }
 
   @Get()
+  @Roles(UserRole.Customer) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Retrieve all ingredients' })
   @ApiResponse({ status: 200, description: 'List of ingredients.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
   async findAll(
-    @Query('pageIndex') pageIndex: number = 1, // Mặc định là trang 1
-    @Query('pageSize') pageSize: number = 10, // Mặc định là 10 mục trên mỗi trang
-    @Query('keyword') keyword?: string, // Từ khóa tìm kiếm tùy chọn
+    @Query('pageIndex') pageIndex?: string, // Optional parameter as string
+    @Query('pageSize') pageSize?: string, // Optional parameter as string
+    @Query('keyword') keyword?: string, // Optional parameter
   ) {
-    return this.ingredientService.findAll(pageIndex, pageSize, keyword);
+    const parsedPageIndex = parseInt(pageIndex || '', 10);
+    const parsedPageSize = parseInt(pageSize || '', 10);
+
+    // Set default values if parsing results in NaN
+    const finalPageIndex = isNaN(parsedPageIndex) ? 1 : parsedPageIndex;
+    const finalPageSize = isNaN(parsedPageSize) ? 10 : parsedPageSize;
+    const finalKeyword = keyword ?? '';
+    return this.ingredientService.findAll(
+      finalPageIndex,
+      finalPageSize,
+      finalKeyword,
+    );
   }
 
   @Get(':id')
+  @Roles(UserRole.Customer) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Retrieve a ingredient by ID' })
   @ApiResponse({ status: 200, description: 'The ingredient information.' })
   @ApiResponse({ status: 404, description: 'Ingredient not found.' })
@@ -62,6 +82,8 @@ export class IngredientController {
   }
 
   @Patch(':id')
+  @Roles(UserRole.Admin) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Update a ingredient' })
   @ApiResponse({
     status: 200,
@@ -77,6 +99,8 @@ export class IngredientController {
   }
 
   @Delete(':id')
+  @Roles(UserRole.Admin) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Delete a ingredient' })
   @ApiResponse({
     status: 200,

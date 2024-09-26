@@ -28,8 +28,11 @@ export class ReviewService {
   }
 
   async remove(id: string) {
-    return await this.databaseService.reviews.delete({
+    return await this.databaseService.reviews.update({
       where: { ReviewID: id },
+      data: {
+        IsDeleted: true,
+      },
     });
   }
 }

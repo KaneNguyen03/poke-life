@@ -25,6 +25,9 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { GetCurrentUser } from 'src/common/decorators';
 import { Order } from './entities/order.entity';
+import { RolesGuard } from 'src/common/guards/roles.guard'; // Đảm bảo đường dẫn đúng
+import { Roles } from 'src/common/decorators/roles.decorator'; // Đảm bảo đường dẫn đúng
+import { UserRole } from 'src/auth/types/user-role.enum';
 
 @ApiTags('order')
 @ApiBearerAuth()
@@ -34,6 +37,8 @@ export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Post()
+  @Roles(UserRole.Customer) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Create a new order' })
   @ApiResponse({
     status: 201,
@@ -51,6 +56,8 @@ export class OrderController {
   }
 
   @Get()
+  @Roles(UserRole.Admin) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Retrieve all orders' })
   @ApiResponse({ status: 200, description: 'List of orders.', type: Order })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
@@ -93,6 +100,8 @@ export class OrderController {
   }
 
   @Get('customerID')
+  @Roles(UserRole.Customer) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Retrieve all orders by customer ID' })
   @ApiResponse({ status: 200, description: 'List all orders of customer.' })
   @ApiResponse({ status: 404, description: 'Orders not found.' })
@@ -144,6 +153,8 @@ export class OrderController {
   }
 
   @Get('detail/:id')
+  @Roles(UserRole.Customer) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Retrieve a order details of order by order ID' })
   @ApiResponse({
     status: 200,
@@ -156,6 +167,8 @@ export class OrderController {
   }
 
   @Get(':id')
+  @Roles(UserRole.Customer) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Retrieve a orders by ID' })
   @ApiResponse({ status: 200, description: 'The orders information.' })
   @ApiResponse({ status: 404, description: 'Orders not found.' })
@@ -165,6 +178,8 @@ export class OrderController {
   }
 
   @Patch(':id')
+  @Roles(UserRole.Customer) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Update a status order' })
   @ApiResponse({
     status: 200,
@@ -180,6 +195,8 @@ export class OrderController {
   }
 
   @Delete(':id')
+  @Roles(UserRole.Customer) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Delete a order' })
   @ApiResponse({
     status: 200,

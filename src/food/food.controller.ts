@@ -20,8 +20,12 @@ import {
 } from '@nestjs/swagger';
 import { Prisma } from '@prisma/client';
 import { AtStrategy } from 'src/auth/strategies';
-import { GetCurrentUser, Public } from 'src/common/decorators';
+import { GetCurrentUser } from 'src/common/decorators';
 import { CreateFoodDto, CreateCustomFoodDto } from './dto/create-food.dto';
+
+import { RolesGuard } from 'src/common/guards/roles.guard'; // Đảm bảo đường dẫn đúng
+import { Roles } from 'src/common/decorators/roles.decorator'; // Đảm bảo đường dẫn đúng
+import { UserRole } from 'src/auth/types/user-role.enum';
 
 @ApiTags('food')
 @ApiBearerAuth()
@@ -31,6 +35,8 @@ export class FoodController {
   constructor(private readonly foodService: FoodService) {}
 
   @Post()
+  @Roles(UserRole.Admin) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Create a new food item' })
   @ApiResponse({
     status: 201,
@@ -43,6 +49,8 @@ export class FoodController {
   }
 
   @Post('customDish')
+  @Roles(UserRole.Customer) // cus trở lên có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Create a new custom food item' })
   @ApiResponse({
     status: 201,
@@ -54,34 +62,65 @@ export class FoodController {
     return this.foodService.createCustomDish(createFoodDto);
   }
 
-  @Public()
+  // @Public()
   @Get()
+  @Roles(UserRole.Admin) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Retrieve all food items' })
   @ApiResponse({ status: 200, description: 'List of food items.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
   async findAll(
-    @Query('pageIndex') pageIndex: number = 1, // Mặc định là trang 1
-    @Query('pageSize') pageSize: number = 10, // Mặc định là 10 mục trên mỗi trang
-    @Query('keyword') keyword?: string, // Từ khóa tìm kiếm tùy chọn
+    @Query('pageIndex') pageIndex?: string, // Optional parameter as string
+    @Query('pageSize') pageSize?: string, // Optional parameter as string
+    @Query('keyword') keyword?: string, // Optional parameter
   ) {
-    return this.foodService.findAll(pageIndex, pageSize, keyword);
+    const parsedPageIndex = parseInt(pageIndex || '', 10);
+    const parsedPageSize = parseInt(pageSize || '', 10);
+
+    // Set default values if parsing results in NaN
+    const finalPageIndex = isNaN(parsedPageIndex) ? 1 : parsedPageIndex;
+    const finalPageSize = isNaN(parsedPageSize) ? 10 : parsedPageSize;
+    const finalKeyword = keyword ?? '';
+
+    return this.foodService.findAll(
+      finalPageIndex,
+      finalPageSize,
+      finalKeyword,
+    );
   }
 
-  @Public()
+  // @Public()
   @Get('customer')
+  @Roles(UserRole.Customer) // cus trở lên có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Retrieve all food items for customer' })
   @ApiResponse({ status: 200, description: 'List of food items.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
   async findAllForCustomer(
-    @Query('pageIndex') pageIndex: number = 1, // Mặc định là trang 1
-    @Query('pageSize') pageSize: number = 10, // Mặc định là 10 mục trên mỗi trang
-    @Query('keyword') keyword?: string, // Từ khóa tìm kiếm tùy chọn
+    @Query('pageIndex') pageIndex?: string, // Optional parameter as string
+    @Query('pageSize') pageSize?: string, // Optional parameter as string
+    @Query('keyword') keyword?: string, // Optional parameter
   ) {
-    return this.foodService.findAllForCustomer(pageIndex, pageSize, keyword);
+    const parsedPageIndex = parseInt(pageIndex || '', 10);
+    const parsedPageSize = parseInt(pageSize || '', 10);
+
+    // Set default values if parsing results in NaN
+    const finalPageIndex = isNaN(parsedPageIndex) ? 1 : parsedPageIndex;
+    const finalPageSize = isNaN(parsedPageSize) ? 10 : parsedPageSize;
+    const finalKeyword = keyword ?? '';
+
+    return this.foodService.findAllForCustomer(
+      finalPageIndex,
+      finalPageSize,
+      finalKeyword,
+    );
   }
 
-  @Public()
+  // @Public()
+
   @Get('customFoodOfCustomer')
+  @Roles(UserRole.Customer) // cus trở lên có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Retrieve all custom food items of a customer' })
   @ApiResponse({
     status: 200,
@@ -102,6 +141,8 @@ export class FoodController {
   }
 
   @Get(':id')
+  @Roles(UserRole.Customer) // cus trở lên có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Retrieve a food item by ID' })
   @ApiResponse({ status: 200, description: 'The food item.' })
   @ApiResponse({ status: 404, description: 'Food item not found.' })
@@ -111,6 +152,8 @@ export class FoodController {
   }
 
   @Patch(':id')
+  @Roles(UserRole.Admin) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Update a food item' })
   @ApiResponse({
     status: 200,
@@ -126,6 +169,8 @@ export class FoodController {
   }
 
   @Delete(':id')
+  @Roles(UserRole.Admin) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Delete a food item' })
   @ApiResponse({
     status: 200,

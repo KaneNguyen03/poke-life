@@ -37,8 +37,11 @@ export class CustomDishIngredientService {
   }
 
   async remove(id: string) {
-    return await this.databaseService.customDishIngredients.delete({
+    return await this.databaseService.customDishIngredients.update({
       where: { CustomDishIngredientID: id },
+      data: {
+        IsDeleted: true,
+      },
     });
   }
 }

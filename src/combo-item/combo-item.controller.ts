@@ -18,6 +18,9 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { RolesGuard } from 'src/common/guards/roles.guard'; // Đảm bảo đường dẫn đúng
+import { Roles } from 'src/common/decorators/roles.decorator'; // Đảm bảo đường dẫn đúng
+import { UserRole } from 'src/auth/types/user-role.enum';
 
 @ApiTags('combo-item')
 @ApiBearerAuth()
@@ -27,6 +30,8 @@ export class ComboItemController {
   constructor(private readonly comboItemService: ComboItemService) {}
 
   @Post()
+  @Roles(UserRole.Admin) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Create a new combo item' })
   @ApiResponse({
     status: 201,
@@ -39,6 +44,8 @@ export class ComboItemController {
   }
 
   @Get()
+  @Roles(UserRole.Customer) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Retrieve all combo items' })
   @ApiResponse({ status: 200, description: 'List of combo items.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
@@ -47,6 +54,8 @@ export class ComboItemController {
   }
 
   @Get(':id')
+  @Roles(UserRole.Customer) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Retrieve a combo item by ID' })
   @ApiResponse({ status: 200, description: 'The combo item information.' })
   @ApiResponse({ status: 404, description: 'Combo item not found.' })
@@ -56,6 +65,8 @@ export class ComboItemController {
   }
 
   @Patch(':id')
+  @Roles(UserRole.Admin) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Update a combo item' })
   @ApiResponse({
     status: 200,
@@ -71,6 +82,8 @@ export class ComboItemController {
   }
 
   @Delete(':id')
+  @Roles(UserRole.Admin) // Chỉ admin có quyền truy cập
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Delete a combo item' })
   @ApiResponse({
     status: 200,

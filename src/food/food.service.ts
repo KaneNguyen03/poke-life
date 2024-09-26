@@ -1,6 +1,5 @@
 import { DatabaseService } from 'src/database/database.service';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
 
 import { Prisma } from '@prisma/client';
 import { CreateFoodDto, CreateCustomFoodDto } from './dto/create-food.dto';
@@ -96,7 +95,7 @@ export class FoodService {
     }
   }
 
-  async findAll(pageIndex: number, pageSize: number, keyword?: string) {
+  async findAll(pageIndex: number, pageSize: number, keyword: string = '') {
     try {
       const skip = (pageIndex - 1) * pageSize;
       const take = pageSize;
@@ -128,7 +127,7 @@ export class FoodService {
   async findAllForCustomer(
     pageIndex: number,
     pageSize: number,
-    keyword?: string,
+    keyword: string = '',
   ) {
     try {
       const skip = (pageIndex - 1) * pageSize;
@@ -270,6 +269,9 @@ export class FoodService {
   }
 
   async remove(id: string) {
-    return await this.databaseService.food.delete({ where: { FoodID: id } });
+    return await this.databaseService.food.update({
+      where: { FoodID: id },
+      data: { IsDeleted: true },
+    });
   }
 }
