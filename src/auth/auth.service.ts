@@ -20,8 +20,32 @@ export class AuthService {
     ) { }
 
     async signupLocal(dto: SignupDto): Promise<Tokens> {
+        // Check if a user with the same email or username already exists
+        const existingUser = await this.prisma.users.findFirst({
+            where: {
+                OR: [
+                    { Email: dto.email },
+                    { Username: dto.username }
+                ]
+            }
+        })
+        const existingCustomer = await this.prisma.customers.findFirst({
+            where: {
+                OR: [
+                    { Email: dto.email },
+                    { FullName: dto.username }
+                ]
+            }
+        })
+
+        if (existingUser || existingCustomer) {
+            throw new ForbiddenException('User already exists with this email or username')
+        }
+
+        // Hash the password
         const hash = await argon.hash(dto.password)
 
+        // Create the new user
         const user = await this.prisma.users
             .create({
                 data: {
@@ -42,21 +66,24 @@ export class AuthService {
                 throw error
             })
 
+        // Create the customer profile
         await this.prisma.customers.create({
             data: {
                 CustomerID: user.UserID,
                 Address: dto.address,
                 PhoneNumber: dto.phoneNumber,
                 FullName: dto.username,
-                Email: user.Email,
+                Email: dto.email,
             },
         })
 
+        // Generate tokens
         const tokens = await this.getTokens(user.UserID, user.Email)
         await this.updateRtHash(user.UserID, tokens.refresh_token)
 
         return tokens
     }
+
 
     async signinLocal(dto: SigninDto): Promise<Tokens> {
         const user = await this.prisma.users.findUnique({
@@ -129,7 +156,7 @@ export class AuthService {
         const [at, rt] = await Promise.all([
             this.jwtService.signAsync(jwtPayload, {
                 secret: this.config.get<string>('AT_SECRET'),
-                expiresIn: '10s',
+                expiresIn: '15m',
             }),
             this.jwtService.signAsync(jwtPayload, {
                 secret: this.config.get<string>('RT_SECRET'),
@@ -187,6 +214,7 @@ export class AuthService {
         }
 
         // Return a new object excluding sensitive fields
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { Password, HashedRt, ...safeUser } = user
         return safeUser as Omit<Users, 'password' | 'hashRt'>
     }

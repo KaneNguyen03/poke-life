@@ -9,14 +9,14 @@ import {
     Response,
     UseGuards,
 } from '@nestjs/common'
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { GetCurrentUser, GetCurrentUserId, Public } from '../common/decorators'
+import { AtGuard } from '../common/guards'
 import { AuthService } from './auth.service'
-import { AtGuard, RtGuard } from '../common/guards'
-import { Public, GetCurrentUserId, GetCurrentUser } from '../common/decorators'
 import { SigninDto, SignupDto } from './dto'
-import { Tokens } from './types'
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger'
-import { TokensResponse } from './types/tokensResponse.type'
 import { GoogleOAuthGuard } from './google-oauth.guard'
+import { Tokens } from './types'
+import { TokensResponse } from './types/tokensResponse.type'
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -111,4 +111,6 @@ export class AuthController {
     ) {
         return this.authService.getUserById(user.sub)
     }
+
+
 }
