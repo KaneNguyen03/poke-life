@@ -1,3 +1,4 @@
+import { IoAdapter } from '@nestjs/platform-socket.io'
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
@@ -31,14 +32,6 @@ async function bootstrap() {
   // Enable CORS with the defined options
   app.enableCors(corsOptions)
 
-  // Set up Swagger options
-  const config = new DocumentBuilder()
-    .setTitle('API Documentation')
-    .setDescription('The API description')
-    .addBearerAuth() // Add Bearer Auth
-    .setVersion('1.0')
-    .build()
-
   // Configure session middleware
   app.use(
     session({
@@ -54,6 +47,14 @@ async function bootstrap() {
   app.use(passport.initialize())
   app.use(passport.session())
 
+  // Create Swagger options
+  const config = new DocumentBuilder()
+    .setTitle('API Documentation')
+    .setDescription('The API description')
+    .addBearerAuth() // Add Bearer Auth
+    .setVersion('1.0')
+    .build()
+
   // Create Swagger document
   const document = SwaggerModule.createDocument(app, config)
 
@@ -67,6 +68,10 @@ async function bootstrap() {
     transform: true, // Automatically transform input types according to DTO
   }))
 
+  // Set up the IoAdapter for Socket.IO
+  app.useWebSocketAdapter(new IoAdapter(app))
+
   await app.listen(3000)
 }
+
 bootstrap()

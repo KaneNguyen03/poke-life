@@ -1,11 +1,9 @@
-
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { APP_GUARD } from '@nestjs/core'
 import { PassportModule } from '@nestjs/passport'
 import { CustomDishIngredientModule } from './custom-dish-ingredient/custom-dish-ingredient.module'
 import { IngredientModule } from './ingredient/ingredient.module'
-
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
 import { AuthModule } from './auth/auth.module'
 import { ComboItemModule } from './combo-item/combo-item.module'
@@ -18,6 +16,7 @@ import { OrderModule } from './order/order.module'
 import { PrismaModule } from './prisma/prisma.module'
 import { ReviewModule } from './review/review.module'
 import { TransactionModule } from './transaction/transaction.module'
+import { ChatGateway } from './chat/chat.gateway'
 
 @Module({
   imports: [
@@ -50,6 +49,7 @@ import { TransactionModule } from './transaction/transaction.module'
     ]),
   ],
   providers: [
+    ChatGateway, // Add your ChatGateway to the providers
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

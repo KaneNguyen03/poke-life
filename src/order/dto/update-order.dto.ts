@@ -52,4 +52,11 @@ export class UpdateOrderDto {
   @IsOptional()
   @IsEnum(PaymentMethod)
   paymentMethod?: PaymentMethod
+
+  @ApiProperty({
+    description: 'Created Date of the order',
+    required: false,
+  })
+  @IsOptional()
+  createdAt!: string
 }
