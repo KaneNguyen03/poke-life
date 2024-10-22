@@ -27,4 +27,10 @@ export class ChatService {
     async getAllMessage(): Promise<ChatMessage[]> {
         return (await this.chatMessageModel.find()).filter(x => x.userId === 'admin')
     }
+
+    async fetchChatHistory(userId: string): Promise<ChatMessage[]> {
+        const query = { $or: [{ userId }, { sender: userId }] }
+
+        return this.chatMessageModel.find(query).sort({ createdAt: 1 }).exec()
+    }
 }

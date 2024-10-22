@@ -10,12 +10,6 @@ export class ChatController {
     constructor(private readonly chatService: ChatService) { }
 
     @Public()
-    @Get(':userId')
-    async getChatHistory(@Param('userId') userId: string): Promise<ChatMessage[]> {
-        return this.chatService.getChatMessagesByUserId(userId)
-    }
-
-    @Public()
     @Get('/sender/:senderId')
     async getChatHistoryBySender(@Param('senderId') userId: string): Promise<ChatMessage[]> {
         return this.chatService.getChatMessagesBySender(userId)
@@ -25,6 +19,12 @@ export class ChatController {
     @Post('message') // This endpoint will create a chat message
     async createChatMessage(@Body() createChatMessageDto: CreateChatMessageDto): Promise<ChatMessage> {
         return this.chatService.createChatMessage(createChatMessageDto)
+    }
+
+    @Public()
+    @Get(':userId')
+    async getChatHistory(@Param('userId') userId: string): Promise<ChatMessage[]> {
+        return this.chatService.fetchChatHistory(userId)
     }
 
     @Public()
