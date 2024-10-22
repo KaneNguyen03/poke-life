@@ -17,6 +17,9 @@ import { PrismaModule } from './prisma/prisma.module'
 import { ReviewModule } from './review/review.module'
 import { TransactionModule } from './transaction/transaction.module'
 import { ChatGateway } from './chat/chat.gateway'
+import { ChatMessageModule } from './chat/chat-message.module'
+import { MongooseModule } from '@nestjs/mongoose'
+import { ChatService } from './chat/chat.service'
 
 @Module({
   imports: [
@@ -34,7 +37,8 @@ import { ChatGateway } from './chat/chat.gateway'
     PassportModule.register({ session: true }),
     IngredientModule,
     CustomDishIngredientModule,
-
+    MongooseModule.forRoot(process.env.MONGODB_URI || ''),
+    ChatMessageModule,
     ThrottlerModule.forRoot([
       {
         name: 'short',
@@ -49,7 +53,8 @@ import { ChatGateway } from './chat/chat.gateway'
     ]),
   ],
   providers: [
-    ChatGateway, // Add your ChatGateway to the providers
+    ChatGateway,
+    ChatService,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
