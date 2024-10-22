@@ -18,6 +18,7 @@ async function bootstrap() {
         'http://localhost:5173',
         'https://poke-life-fe.vercel.app',
         'http://localhost:3000',
+        'https://poke-life.onrender.com'
       ]
       if (allowedOrigins.includes(origin) || !origin) {
         callback(null, true) // Allow the request
