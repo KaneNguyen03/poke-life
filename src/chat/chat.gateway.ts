@@ -33,7 +33,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         console.log('Message received:', payload)
 
         // Store the message in MongoDB
-        await this.chatService.createChatMessage(payload)
+        //await this.chatService.createChatMessage(payload)
 
         // Broadcast the message to all clients
         this.server.emit('message', payload)
