@@ -6,7 +6,7 @@ export type ChatMessageDocument = ChatMessage & Document
 @Schema()
 export class ChatMessage {
     @Prop({ required: true })
-    sender!: 'admin' | 'customer'
+    sender!: string
 
     @Prop({ required: true })
     text!: string

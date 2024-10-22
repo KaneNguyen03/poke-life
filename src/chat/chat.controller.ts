@@ -1,8 +1,9 @@
 // src/chat/chat.controller.ts
-import { Controller, Get, Param } from '@nestjs/common'
+import { Body, Controller, Get, Param, Post } from '@nestjs/common'
 import { ChatService } from './chat.service'
 import { ChatMessage } from './chat-message-schema'
 import { Public } from 'src/common/decorators'
+import { CreateChatMessageDto } from './dto/create-chat-message.dto'
 
 @Controller('chat')
 export class ChatController {
@@ -18,5 +19,11 @@ export class ChatController {
     @Get('customers')
     async fetchCustomers(): Promise<string[]> {
         return this.chatService.fetchCustomers()
+    }
+
+    @Public()
+    @Post('message') // This endpoint will create a chat message
+    async createChatMessage(@Body() createChatMessageDto: CreateChatMessageDto): Promise<ChatMessage> {
+        return this.chatService.createChatMessage(createChatMessageDto);
     }
 }
