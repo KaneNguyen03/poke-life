@@ -20,12 +20,11 @@ export class ChatService {
         return this.chatMessageModel.find({ userId }).exec()
     }
 
-    async fetchCustomers(): Promise<string[]> {
-        const customers = await this.chatMessageModel
-            .find({ userId: 'admin' })
-            .distinct('sender')
-            .exec()
+    async getChatMessagesBySender(sender: string): Promise<ChatMessage[]> {
+        return this.chatMessageModel.find({ sender }).exec()
+    }
 
-        return customers
+    async getAllMessage(): Promise<ChatMessage[]> {
+        return (await this.chatMessageModel.find()).filter(x => x.userId === 'admin')
     }
 }

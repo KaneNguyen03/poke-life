@@ -16,14 +16,20 @@ export class ChatController {
     }
 
     @Public()
-    @Get('customers')
-    async fetchCustomers(): Promise<string[]> {
-        return this.chatService.fetchCustomers()
+    @Get('/sender/:senderId')
+    async getChatHistoryBySender(@Param('senderId') userId: string): Promise<ChatMessage[]> {
+        return this.chatService.getChatMessagesBySender(userId)
     }
 
     @Public()
     @Post('message') // This endpoint will create a chat message
     async createChatMessage(@Body() createChatMessageDto: CreateChatMessageDto): Promise<ChatMessage> {
-        return this.chatService.createChatMessage(createChatMessageDto);
+        return this.chatService.createChatMessage(createChatMessageDto)
+    }
+
+    @Public()
+    @Get()
+    async getAllMessages(): Promise<ChatMessage[]> {
+        return this.chatService.getAllMessage()
     }
 }
